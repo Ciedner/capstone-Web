@@ -1,22 +1,47 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../config/firebase'; 
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userInformation, setUserInformation] = useState(null); // State to hold user information
 
-  const navigate = useNavigate();
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    console.log('Email:', email);
-    console.log('Password:', password);
+  const handleLogin = () => {
+    navigate('/Dashboard');
   };
+ 
+  async function handleSubmit(e) {
+    e.preventDefault();
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const establishmentRef = db.collection('establishment');
+      const establishmentDoc = await establishmentRef.doc(user.uid).get();
+
+      if (!establishmentDoc.exists) {
+        alert('Establishment not found.');
+        return;
+      }
+
+      // Set user information in state
+      setUserInformation(establishmentDoc.data());
+
+      console.log('Logged in successfully!');
+      navigate('/Dashboard');
+    } catch (error) {
+      console.error('Error logging in:', error);
+    }
+  }
 
   const handleCreateAccount = () => {
     navigate('/Create');
   };
-
+ 
   const containerStyle = {
     width: '400px',
     margin: '0 auto',
@@ -100,7 +125,7 @@ function Login() {
       </div>
       <div style={containerStyle}>
         <h2 style={head}>Log in</h2>
-        <form onSubmit={handleSubmit}>
+        <form>
             <div style={inputGroupStyle}>
               <input
                 type="email"
@@ -125,7 +150,7 @@ function Login() {
                 placeholder='Password'
               />
             </div>
-            <button type="submit" style={buttonStyle}>Log In</button>
+            <button type="submit" style={buttonStyle} onClick={handleSubmit}>Log In</button>
             <h3 style={para}>Forgot Password</h3>
             <button type="button" style={create} onClick={handleCreateAccount}>
                 Create Account

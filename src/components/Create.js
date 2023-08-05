@@ -1,19 +1,53 @@
 import React, { useState } from 'react';
+import { db } from '../config/firebase';
+import { addDoc, collection } from 'firebase/firestore';
 
 function Create() {
   const [managementName, setManagementName] = useState('');
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [numberOfParkingLots, setNumberOfParkingLots] = useState('');
+  const [contact, setContact] = useState('');
 
-  const handleSubmit = (e) => {
+  const collectionRef = collection(db, 'establishment');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission, such as sending data to a server
-    console.log('Form submitted:');
-    console.log('Management Name:', managementName);
-    console.log('Address:', address);
-    console.log('Email:', email);
-    console.log('Password:', password);
+  
+    try {
+      console.log("Submitting form data:", {
+        email,
+        address,
+        contact,
+        password,
+        numberOfParkingLots,
+        managementName,
+      });
+  
+      await addDoc(collectionRef, {
+        email,
+        address,
+        contact,
+        password,
+        numberOfParkingLots,
+        managementName,
+      });
+  
+      console.log('Document successfully written!');
+      setManagementName('');
+      setAddress('');
+      setEmail('');
+      setPassword('');
+      setNumberOfParkingLots('');
+      setContact('');
+    } catch (error) {
+      console.error('Error creating account:', error);
+    }
+  };
+
+  const handleParkingTypeChange = (e) => {
+    setNumberOfParkingLots(e.target.value);
   };
 
   const containerStyle = {
@@ -82,7 +116,7 @@ function Create() {
       <div style={formContainerStyle}>
         <h2 style={{ textAlign: 'center' }}>Create a New Account</h2>
         <form onSubmit={handleSubmit}>
-          <div style={inputGroupStyle}> 
+          <div style={inputGroupStyle}>
             <input
               type="text"
               placeholder="Management Name"
@@ -92,10 +126,10 @@ function Create() {
               style={inputStyle}
             />
           </div>
-          <div style={inputGroupStyle}> 
+          <div style={inputGroupStyle}>
             <input
               type="text"
-              placeholder=" Address"
+              placeholder="Address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
@@ -118,6 +152,27 @@ function Create() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              style={inputStyle}
+            />
+          </div>
+          <div style={inputGroupStyle}>
+            <label htmlFor="numberOfParkingLots">Number of Parking Lots Available</label>
+            <input
+              type="number"
+              id="numberOfParkingLots"
+              value={numberOfParkingLots}
+              onChange={handleParkingTypeChange}
+              required
+              style={inputStyle}
+            />
+          </div>
+          <div style={inputGroupStyle}>
+            <input
+              type='text'
+              placeholder="Contact"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
               required
               style={inputStyle}
             />
