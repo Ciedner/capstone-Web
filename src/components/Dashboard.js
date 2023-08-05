@@ -34,19 +34,23 @@ const Establishment = ({ recentAddedUser }) => {
   const navigate = useNavigate();
 
   const handleButtonClick = () => {
-    navigate("/operator");
+    navigate("/OperatorDashboard");
   };
 
   const handleRevenues = () => {
-    navigate("/revenues");
+    navigate("/Tracks");
   };
 
   const handleRegister = () => {
-    navigate("/agentRegister");
+    navigate("/AgentRegistration");
   };
 
   const handleFeed = () => {
-    navigate("/feed");
+    navigate("/Feedback");
+  };
+
+  const handleProfile = () => {
+    navigate("/Profiles");
   };
 
   return (
@@ -61,7 +65,7 @@ const Establishment = ({ recentAddedUser }) => {
       <MDBContainer className="py-5">
         <MDBRow>
           <MDBCol lg="4">
-            <MDBCard className="mb-4">
+          <MDBCard className="mb-4">
               <MDBCardBody className="text-center" style={{backgroundColor:"#bfd2d9"}}>
                 <p style={{fontFamily:"Courier New"}}>Administrator</p>
                 <MDBCardImage
@@ -74,6 +78,7 @@ const Establishment = ({ recentAddedUser }) => {
                 <p className="text-muted mb-1" style={{fontFamily:"Courier New", marginTop:'15px'}}>Marky Parking Management</p>
                 <p className="text-muted mb-4" style={{fontFamily:"Courier New"}}>Talamban, Cebu</p>
                 <div className="d-flex justify-content-center mb-2">
+                  <button className="btn btn-primary" onClick={handleProfile}>View Profile</button>
                 </div>
               </MDBCardBody>
             </MDBCard>
