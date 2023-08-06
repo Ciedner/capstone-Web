@@ -14,7 +14,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const collectionRef = collection(db, 'establishment');
+      const collectionRef = collection(db, 'establishments');
       const querySnapshot = await getDocs(collectionRef);
       
       const establishment = querySnapshot.docs.find(doc => doc.data().email === email);
@@ -22,7 +22,7 @@ function Login() {
       if (establishment && establishment.data().password === password) {
         setEstablishmentData(establishment.data());
         alert('Login successful!');
-        navigate('/Dashboard', { state: establishment.data() }); // Pass user data as state
+        navigate('/Dashboard', { state: establishment.data() });
       } else {
         alert('Invalid login credentials. Please try again.');
       }

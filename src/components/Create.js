@@ -9,9 +9,10 @@ function Create() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [numberOfParkingLots, setNumberOfParkingLots] = useState('');
+  const [parkingPay, setParkingPayment] = useState('');
   const [contact, setContact] = useState('');
 
-  const collectionRef = collection(db, 'establishment');
+  const collectionRef = collection(db, 'establishments');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -25,6 +26,7 @@ function Create() {
         password,
         numberOfParkingLots,
         managementName,
+        parkingPay,
       });
   
       await addDoc(collectionRef, {
@@ -34,6 +36,7 @@ function Create() {
         password,
         numberOfParkingLots,
         managementName,
+        parkingPay,
       });
   
       console.log('Document successfully written!');
@@ -43,6 +46,7 @@ function Create() {
       setPassword('');
       setNumberOfParkingLots('');
       setContact('');
+      setParkingPayment('');
       alert('Successfully registered!');
       navigate.navigate()
     } catch (error) {
@@ -178,6 +182,16 @@ function Create() {
               placeholder="Contact"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
+              required
+              style={inputStyle}
+            />
+          </div>
+          <div style={inputGroupStyle}>
+            <input
+              type='text'
+              placeholder="Parking Payment"
+              value={parkingPay}
+              onChange={(e) => setParkingPayment(e.target.value)}
               required
               style={inputStyle}
             />

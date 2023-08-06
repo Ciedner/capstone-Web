@@ -151,7 +151,7 @@ const Establishment = () => {
           <Card> 
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}> <FontAwesomeIcon icon={faCar} color="green"/> Parking Availability</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>250</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}> {establishmentData && establishmentData.numberOfParkingLots}</Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -175,7 +175,7 @@ const Establishment = () => {
           <Card>
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}><FontAwesomeIcon icon={faFileInvoiceDollar} color="orange"/> Parking Payment</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>30</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{establishmentData && establishmentData.parkingPay}</Card.Text>
             </Card.Body>
           </Card>
         </div>  
