@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyCDuoGHrM9DLaWmtGeVn2BnBsC1BOLGGCo",
   authDomain: "spotwise-e1514.firebaseapp.com",

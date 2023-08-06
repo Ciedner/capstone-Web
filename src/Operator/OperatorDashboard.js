@@ -8,6 +8,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FaUserCircle } from "react-icons/fa";
 import { faCar, faCoins, faUser, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
+import {db} from "../config/firebase"
 
 function OperatorDashboard() {
   const [data, setData] = useState([]);
@@ -62,18 +63,23 @@ function OperatorDashboard() {
   const handleSearchSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch(`http://localhost:8000/user/${searchInput}`);
-      if (response.ok) {
-        const user = await response.json();
+      const usersRef = db.collection('user');
+      const query = usersRef.where('email', '==', searchInput);
+      const querySnapshot = await query.get();
+  
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const user = userDoc.data();
         setFoundUser(user);
       } else {
         setFoundUser(null);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error:', error);
       setFoundUser(null);
     }
   };
+  
 
   const handleInVehicleClick = () => {
     if (foundUser) {
@@ -204,10 +210,9 @@ function OperatorDashboard() {
           {foundUser && (
             <div>
               <h2 style={{fontFamily:'Courier New'}}>User Information:</h2>
-              <p style={{fontFamily:'Copperplate'}}>First Name: {foundUser.fName}</p>
-              <p style={{fontFamily:'Copperplate'}}>Last Name: {foundUser.lName}</p>
-              <p style={{fontFamily:'Copperplate'}}>Vehicle: {foundUser.vehicle}</p>
-              <p style={{fontFamily:'Copperplate'}}>Plate No: {foundUser.plate}</p>
+              <p style={{fontFamily:'Copperplate'}}>First Name: {foundUser.name}</p>
+              <p style={{fontFamily:'Copperplate'}}>Vehicle: {foundUser.car}</p>
+              <p style={{fontFamily:'Copperplate'}}>Plate No: {foundUser.carPlateNumber}</p>
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                 <button
                   className="button"

@@ -51,7 +51,6 @@ function Create() {
       navigate.navigate()
     } catch (error) {
       console.error('Error creating account:', error);
-      alert('Error registering. Please try again.');
     }
   };
 
