@@ -16,9 +16,10 @@ import {
 
 export default function EditButton() {
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("Marky Parking Management"); 
-  const [location, setLocation] = useState("Talamban, Cebu"); 
-  const [description, setDescription] = useState("A parking space that will allocate drivers a spacious parking space"); 
+  const [name, setName] = useState("Richard Macol"); 
+  const [location, setLocation] = useState("Carmen, Cebu"); 
+  const [email, setEmail] = useState("richardm@gmail.com"); 
+  const [contactNumber, setContactNumber] = useState("01234567890"); 
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
@@ -61,7 +62,7 @@ export default function EditButton() {
               title={<FaUserCircle style={styles.icon} />}
               id="dropdown-menu"
             >
-              <Dropdown.Item href="Dashboard">Dashboard</Dropdown.Item>
+              <Dropdown.Item href="OperatorDashboard">Dashboard</Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item href="/">Logout</Dropdown.Item>
             </DropdownButton>
@@ -73,8 +74,8 @@ export default function EditButton() {
           <MDBCol lg="9" xl="7">
             <MDBCard>
               <div className="rounded-top text-white d-flex flex-row" style={{ backgroundColor: '#000', height: '200px' }}>
-                <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '120px' }}>
-                  <MDBCardImage src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '150px' }}>
+                  <MDBCardImage src="richard.jpg"
                     alt="Generic placeholder image" className="mt-4 mb-2 img-thumbnail" fluid style={{ width: '150px', zIndex: '1' }} />
                 </div>
                 <div className="ms-3" style={{ marginTop: '130px' }}>
@@ -82,11 +83,13 @@ export default function EditButton() {
                     <>
                       <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
                       <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
+                      <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
                     </>
                   ) : (
                     <>
                       <MDBTypography tag="h5">{name}</MDBTypography>
                       <MDBCardText>{location}</MDBCardText>
+                      <MDBCardText>{email}</MDBCardText>
                     </>
                   )}
                 </div>
@@ -102,13 +105,15 @@ export default function EditButton() {
                     <div className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
                       <input type="text" placeholder="Company" />
                       <input type="text" placeholder="Location" />
-                      <input type="text" placeholder="Description" />
+                      <input type="text" placeholder="Contatc Number" />
                     </div>
                   ) : (
                     <div className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                    <MDBCardText className="font-italic mb-1" style={{textAlign:'center', fontWeight:'bold'}}>AGENT INFORMATION</MDBCardText>
                       <MDBCardText className="font-italic mb-1">{name}</MDBCardText>
                       <MDBCardText className="font-italic mb-1">{location}</MDBCardText>
-                      <MDBCardText className="font-italic mb-0">{description}</MDBCardText>
+                      <MDBCardText className="font-italic mb-1">{email}</MDBCardText>
+                      <MDBCardText className="font-italic mb-0">{contactNumber}</MDBCardText>
                     </div>
                   )}
                 </div>

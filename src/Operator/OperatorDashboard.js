@@ -20,8 +20,9 @@ function OperatorDashboard() {
     const [fixedPrice, setFixedPrice] = useState(30);
     const [totalRevenues, setTotalRevenues] = useState(0);
   const navigate = useNavigate();
-
   const location = useLocation();
+  const agentData = location.state; 
+  const establishmentData = location.state; 
   const styles = {
     welcomeMessage: {
       position: "absolute",
@@ -145,7 +146,8 @@ function OperatorDashboard() {
                 title={<FaUserCircle style={styles.icon} />}
                 id="dropdown-menu"
               >
-                <Dropdown.Item href="view">View Parking Slots</Dropdown.Item>
+                <Dropdown.Item href="OperatorProfile">Profile</Dropdown.Item>
+                <Dropdown.Item href="ViewSpace">View Parking Slots</Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item href="/">Logout</Dropdown.Item>
               </DropdownButton>
@@ -153,7 +155,7 @@ function OperatorDashboard() {
         </div>
       </nav>
       <div className="container text-center" style={{ marginTop: '30px', fontFamily: 'Courier New', fontSize: '30px'}}>
-        <p style={{color:'white'}}>Welcome to your Parking Management System</p>
+        <p style={{color:'white'}}>Welcome {agentData && agentData.firstName}  </p>
       </div>
       <div className="row mt-3 ">
         <div className="col-md-3">

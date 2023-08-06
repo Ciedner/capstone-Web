@@ -124,7 +124,7 @@ function CreateAccount() {
         <div style={logoStyle}>SpotWise Parking Management System</div>
       </div>
       <div style={formContainerStyle}>
-        <h4 style={{ textAlign: 'center', marginBottom: '20px'}}>Create an Agent Account</h4>
+        <h4 style={{ textAlign: 'center', marginBottom: '20px', fontSize: '18px'}}>Create an Agent Account</h4>
         <form onSubmit={handleSubmit}>
           <div style={inputGroupStyle}>
             <input

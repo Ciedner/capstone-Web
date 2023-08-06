@@ -60,7 +60,7 @@ const Establishment = () => {
     <section style={{ backgroundColor: '#3b89ac', minHeight: '100vh' }}>
       <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
         <div className="container">
-          <Link className="navbar-brand" to="/estDashBoard">
+          <Link className="navbar-brand" to="/Dashboard">
             SpotWise Parking Management System
           </Link>
         </div>

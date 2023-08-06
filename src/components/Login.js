@@ -17,15 +17,32 @@ function Login() {
     e.preventDefault();
 
     try {
-      const collectionRef = collection(db, 'establishments');
+      let collectionName = '';
+
+      if (userType === 'agents') {
+        collectionName = 'agents'; // Update with your agents collection name
+      } else if (userType === 'establishment') {
+        collectionName = 'establishments';
+      } else {
+        alert('Please select a valid account type.');
+        return;
+      }
+
+      const collectionRef = collection(db, collectionName);
       const querySnapshot = await getDocs(collectionRef);
       
-      const establishment = querySnapshot.docs.find(doc => doc.data().email === email);
+      const user = querySnapshot.docs.find(doc => doc.data().email === email);
 
-      if (establishment && establishment.data().password === password) {
-        setEstablishmentData(establishment.data());
+      if (user && user.data().password === password) {
         alert('Login successful!');
-        navigate('/Dashboard', { state: establishment.data() });
+        // Navigate based on userType
+        if (userType === 'agents') {
+          // Navigate to agent dashboard
+          navigate('/OperatorDashboard', { state: user.data() });
+        } else {
+          // Navigate to establishment dashboard
+          navigate('/Dashboard', { state: user.data() });
+        }
       } else {
         alert('Invalid login credentials. Please try again.');
       }
@@ -100,15 +117,15 @@ function Login() {
           alt="SpotWise Parking Management Logo"
           style={{ width: '200px', marginBottom: '20px', objectFit: 'cover' }}
         />
-        <select
-            value={userType}
-            onChange={(e) => setUserType(e.target.value)}
-            style={selectStyle}
-          >
-             <option value="">Please select type of account</option>
-            <option value="agents">Agent</option>
-            <option value="establishment">Establishment</option>
-          </select>
+         <select
+          value={userType}
+          onChange={(e) => setUserType(e.target.value)}
+          style={selectStyle}
+        >
+          <option value="">Please select type of account</option>
+          <option value="agents">Agent</option>
+          <option value="establishment">Establishment</option>
+        </select>
         <form onSubmit={handleSubmit}>
           <div>
             <input

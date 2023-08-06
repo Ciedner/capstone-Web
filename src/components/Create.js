@@ -122,7 +122,7 @@ function Create() {
         <div style={logoStyle}>SpotWise Parking Management</div>
       </div>
       <div style={formContainerStyle}>
-        <h2 style={{ textAlign: 'center' }}>Create a New Account</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '20px', fontSize: '18px'}}>Create a New Account</h2>
         <form onSubmit={handleSubmit}>
           <div style={inputGroupStyle}>
             <input

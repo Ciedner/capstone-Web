@@ -8,6 +8,8 @@ import AgentRegistration from "./components/AgentRegistration"
 import Tracks from "./components/Tracks";
 import Feedback from "./components/Feedback"
 import Profiles from "./components/Profiles"
+import ForgetPassword from "./components/ForgetPassword"
+import OperatorProfile from "./Operator/OperatorProfile"
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
@@ -25,6 +27,8 @@ function App() {
           <Route path="Tracks" element={<Tracks/>} />
           <Route path="Feedback" element={<Feedback/>} />
           <Route path="Profiles" element={<Profiles/>} />
+          <Route path="forget" element={<ForgetPassword/>} />
+          <Route path="OperatorProfile" element={<OperatorProfile/>} />
         </Routes>
       </Router>
     </div>
