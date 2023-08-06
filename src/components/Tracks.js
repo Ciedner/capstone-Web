@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { FaUserCircle } from "react-icons/fa";
 import { Card, Row, Col, Container, Table } from "react-bootstrap";
 import {
   MDBCard,
@@ -54,6 +56,21 @@ const Tracks = () => {
     setShowReservation(false);
   };
 
+  const styles = {
+    welcomeMessage: {
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      margin: "0",
+      color: "#fff",
+      fontFamily: "Rockwell, sans-serif",
+      textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+    },
+    icon: {
+      marginRight: "5px",
+    },
+  };
+
   return (
     <div style={{ backgroundColor: '#3b89ac', minHeight: "100vh" }}>
       <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
@@ -61,9 +78,21 @@ const Tracks = () => {
             <Link className="navbar-brand" to="/estDashBoard">
               SpotWise Parking Management System
             </Link>
+            <p style={styles.welcomeMessage}>
+            <DropdownButton
+              alignRight
+              variant="outline-light"
+              title={<FaUserCircle style={styles.icon} />}
+              id="dropdown-menu"
+            >
+              <Dropdown.Item href="Dashboard">Dashboard</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item href="/Login">Logout</Dropdown.Item>
+            </DropdownButton>
+          </p>
           </div>
         </nav>
-      <Container style={{backgroundColor:'#bfd2d9', marginTop:'20px', borderRadius:'25px'}}>
+      <Container style={{backgroundColor:'#bfd2d9', marginTop:'80px', borderRadius:'25px'}}>
         <Row>
           <Col md={5} style={{marginTop:'20px'}}>
             <Container>

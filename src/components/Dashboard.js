@@ -1,5 +1,6 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.css';
+import { useLocation } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
 import {
   MDBCol,
@@ -30,8 +31,10 @@ const listItemHoverStyle = {
   backgroundColor: "#bfd2d9",
 };
 
-const Establishment = ({ recentAddedUser }) => {
+const Establishment = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const establishmentData = location.state; 
 
   const handleButtonClick = () => {
     navigate("/OperatorDashboard");
@@ -65,7 +68,7 @@ const Establishment = ({ recentAddedUser }) => {
       <MDBContainer className="py-5">
         <MDBRow>
           <MDBCol lg="4">
-          <MDBCard className="mb-4">
+          <MDBCard className="mb-4" style={{marginTop: '45px'}}>
               <MDBCardBody className="text-center" style={{backgroundColor:"#bfd2d9"}}>
                 <p style={{fontFamily:"Courier New"}}>Administrator</p>
                 <MDBCardImage
@@ -75,15 +78,21 @@ const Establishment = ({ recentAddedUser }) => {
                   style={{ width: '70px', backgroundColor:"#003851"}}
                   fluid
                 />
-                <p className="text-muted mb-1" style={{fontFamily:"Courier New", marginTop:'15px'}}>Marky Parking Management</p>
-                <p className="text-muted mb-4" style={{fontFamily:"Courier New"}}>Talamban, Cebu</p>
+               <p className="text-muted mb-1" style={{ fontFamily: 'Courier New', marginTop: '15px' }}>
+                  {establishmentData && establishmentData.managementName}
+                </p>
+                <p className="text-muted mb-4" style={{ fontFamily: 'Courier New' }}>
+                  {establishmentData && establishmentData.address}
+                </p>
                 <div className="d-flex justify-content-center mb-2">
-                  <button className="btn btn-primary" onClick={handleProfile}>View Profile</button>
+                  <button className="btn btn-primary" onClick={handleProfile}>
+                    View Profile
+                  </button>
                 </div>
               </MDBCardBody>
             </MDBCard>
 
-            <MDBCard className="mb-4 mb-lg-0" style={{backgroundColor:"#bfd2d9"}}>
+            <MDBCard className="mb-4 mb-lg-0" style={{backgroundColor:"#bfd2d9", marginTop: '40px'}}>
               <MDBCardBody className="p-0">
                 <MDBListGroup flush className="rounded-3">
                   <MDBListGroupItem style={listItemStyle}
@@ -171,7 +180,7 @@ const Establishment = ({ recentAddedUser }) => {
           </Card>
         </div>  
       </div>
-            <MDBCard style={{marginTop:"50px", backgroundColor:"#bfd2d9"}}>
+            <MDBCard style={{marginTop:"50px", backgroundColor:"#bfd2d9", }}>
               <MDBCardBody>
               <MDBCardText className="mb-4"  style={{fontFamily:"Courier New"}}> <FontAwesomeIcon icon={faUser} /> <span className="text-primary font-italic me-1"> Recent Parking User</span></MDBCardText>
                 <MDBRow>

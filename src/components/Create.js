@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../config/firebase';
 import { addDoc, collection } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 function Create() {
   const [managementName, setManagementName] = useState('');
@@ -11,6 +12,7 @@ function Create() {
   const [contact, setContact] = useState('');
 
   const collectionRef = collection(db, 'establishment');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,8 +43,11 @@ function Create() {
       setPassword('');
       setNumberOfParkingLots('');
       setContact('');
+      alert('Successfully registered!');
+      navigate.navigate()
     } catch (error) {
       console.error('Error creating account:', error);
+      alert('Error registering. Please try again.');
     }
   };
 
@@ -111,7 +116,7 @@ function Create() {
   return (
     <div style={containerStyle}>
       <div style={navbarStyle}>
-        <div style={logoStyle}>SpotWise</div>
+        <div style={logoStyle}>SpotWise Parking Management</div>
       </div>
       <div style={formContainerStyle}>
         <h2 style={{ textAlign: 'center' }}>Create a New Account</h2>
