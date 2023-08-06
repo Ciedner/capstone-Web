@@ -10,6 +10,7 @@ import Feedback from "./components/Feedback"
 import Profiles from "./components/Profiles"
 import ForgetPassword from "./components/ForgetPassword"
 import OperatorProfile from "./Operator/OperatorProfile"
+import AgentSchedule from "./components/AgentSchedule"
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="Profiles" element={<Profiles/>} />
           <Route path="forget" element={<ForgetPassword/>} />
           <Route path="OperatorProfile" element={<OperatorProfile/>} />
+          <Route path="AgentSchedule" element={<AgentSchedule/>} />
         </Routes>
       </Router>
     </div>

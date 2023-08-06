@@ -1,5 +1,7 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.css';
+import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { FaUserCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
 import {
@@ -55,6 +57,20 @@ const Establishment = () => {
   const handleProfile = () => {
     navigate("/Profiles");
   };
+  const styles = {
+    welcomeMessage: {
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      margin: "0",
+      color: "#fff",
+      fontFamily: "Rockwell, sans-serif",
+      textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+    },
+    icon: {
+      marginRight: "5px",
+    },
+  };
 
   return (
     <section style={{ backgroundColor: '#3b89ac', minHeight: '100vh' }}>
@@ -63,6 +79,18 @@ const Establishment = () => {
           <Link className="navbar-brand" to="/Dashboard">
             SpotWise Parking Management System
           </Link>
+          <p style={styles.welcomeMessage}>
+          <DropdownButton 
+                alignRight
+                variant="outline-light"
+                title={<FaUserCircle style={styles.icon} />}
+                id="dropdown-menu"
+              >
+                <Dropdown.Item href="/AgentSchedule">Agent Schedule</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item href="/">Logout</Dropdown.Item>
+              </DropdownButton>
+          </p>
         </div>
       </nav>
       <MDBContainer className="py-5">
