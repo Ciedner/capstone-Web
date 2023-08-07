@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import Calendar from 'react-calendar';
+import { MDBCardText } from 'mdb-react-ui-kit';
 
 const App = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -56,7 +57,7 @@ const App = () => {
 
 
   return (
-    <Container>
+    <Container style={{backgroundColor:'#385a7c', minHeight:'100vh', }}>
      <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
         <div className="container">
           <Link className="navbar-brand" to="/">
@@ -76,34 +77,66 @@ const App = () => {
               </p>
         </div>
       </nav>
-      <Row className="justify-content-center mt-4">
-        <Col xs={12} md={6} className="text-center">
-          <Calendar value={selectedDate} onChange={handleDateChange} />
-        </Col>
-        <Col xs={12} md={6}>
-          {eventSubmitted && (
-            <Card className="mt-4">
-              <Card.Body style={{backgroundColor:'#ADD8E6', textAlign:'center'}}>
-              <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'20px'}}>
-                    <div className="container">
-                    <a className="navbar-brand" href="">Schedule Details</a>
-                    </div>
-                </nav>
-                <p>Date: {selectedDate.toDateString()}</p>
-                <p>Email: {eventData.email}</p>
-                <p>Time In: {convertToAMPM(eventData.timeIn)}</p>
-                <p>Time Out: {convertToAMPM(eventData.timeOut)}</p>
-                <p>Name: {eventData.name}</p>
-              </Card.Body>
-            </Card>
-          )}
-        </Col>
+      <div>
+      <MDBCardText style={{marginTop:'50px', textAlign:'center', fontSize:'40px', fontFamily:'Georgia',}}>
+          Set Agents Schedule
+        </MDBCardText>
+      </div>
+    <Container style={{backgroundColor:'#8ad6cc', minHeight:'60vh', borderRadius:'10px'}}>
+    <Row className="mt-5">
+    <Col xs={12} md={5} className="mb-4 mb-md-0">
+      <div className="d-flex justify-content-center" style={{marginTop:'80px', marginLeft:'50px'}}> 
+        <Calendar value={selectedDate} onChange={handleDateChange} style={{marginTop:'50px'}} />
+      </div>
+    </Col>
+    <Col xs={12} md={7}>
+  {eventSubmitted && (
+    <Card className="mt-4" style={{top:'50px', right:'30px'}}>
+      <Card.Body style={{ backgroundColor: 'pink', textAlign: 'center' }}>
+      <nav
+        className="navbar navbar-expand-lg navbar-dark"
+        style={{ backgroundColor: '#003851', marginBottom: '10px'}}
+      >
+        <div className="container">
+          <a className="navbar-brand" href="">
+            Schedule Details
+          </a>
+          </div>
+        </nav>
+        <table className="table">
+          <tbody>
+            <tr>
+              <td>Date:</td>
+              <td>{selectedDate.toDateString()}</td>
+            </tr>
+            <tr>
+              <td>Email:</td>
+              <td>{eventData.email}</td>
+            </tr>
+            <tr>
+              <td>Time In:</td>
+              <td>{convertToAMPM(eventData.timeIn)}</td>
+            </tr>
+            <tr>
+              <td>Time Out:</td>
+              <td>{convertToAMPM(eventData.timeOut)}</td>
+            </tr>
+            <tr>
+              <td>Agent Name:</td>
+              <td>{eventData.name}</td>
+            </tr>
+          </tbody>
+        </table>
+      </Card.Body>
+    </Card>
+  )}
+</Col>
       </Row>
       <Modal show={showEventForm} onHide={() => setShowEventForm(false)}>
-        <Modal.Header closeButton>
-        <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'20px'}}>
+        <Modal.Header closeButton style={{backgroundColor:'black',}}>
+        <nav className="navbar navbar-expand-lg navbar-dark" style={{marginLeft:'150px'}}>
                     <div className="container">
-                    <a className="navbar-brand" href="">Agent Schedule</a>
+                    <a className="navbar-brand" href="" >Agent Schedule</a>
                     </div>
                 </nav>
         </Modal.Header>
@@ -165,6 +198,7 @@ const App = () => {
         </Modal.Footer>
       </Modal>
     </Container>
+   </Container>
   );
 };
 

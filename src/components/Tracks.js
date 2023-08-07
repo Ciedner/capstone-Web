@@ -17,7 +17,7 @@ const Tracks = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showTable, setShowTable] = useState(false);
   const [showUserDetail, setShowUserDetail] = useState(false);
-  const [showReservation, setShowReservation] = useState(false);
+  
   const [showSchedule, setShowSchedule] = useState(false);
 
   const handleCardHover = (cardIndex) => {
@@ -31,21 +31,12 @@ const Tracks = () => {
   const handleViewRevenue = () => {
     setShowTable(true);
     setShowUserDetail(false);
-    setShowReservation(false);
     setShowSchedule(false);
   };
 
   const handleViewUserDetail = () => {
     setShowUserDetail(true);
     setShowTable(false);
-    setShowReservation(false);
-    setShowSchedule(false);
-  };
-
-  const handleViewReservation = () => {
-    setShowReservation(true);
-    setShowTable(false);
-    setShowUserDetail(false);
     setShowSchedule(false);
   };
 
@@ -53,7 +44,7 @@ const Tracks = () => {
     setShowSchedule(true);
     setShowTable(false);
     setShowUserDetail(false);
-    setShowReservation(false);
+ 
   };
 
   const styles = {
@@ -126,36 +117,17 @@ const Tracks = () => {
                     <MDBCardImage src='https://png.pngitem.com/pimgs/s/80-800194_transparent-users-icon-png-flat-user-icon-png.png' style={{ objectFit: 'cover', height: '50%', borderRadius:'20px'}} />
                     <MDBCardBody style={{ height: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflowY: 'auto' }}>
                       <div>
-                        <MDBCardTitle style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>Users</MDBCardTitle>
+                        <MDBCardTitle style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>Customer</MDBCardTitle>
                         <MDBCardText style={{ fontFamily: 'serif' }}>
                           This sections offers a summary of the user who parked today.
                         </MDBCardText>
                       </div>
-                      <MDBBtn onClick={handleViewUserDetail} style={{ fontFamily: 'Courier New' }}>View User Detail</MDBBtn>
+                      <MDBBtn onClick={handleViewUserDetail} style={{ fontFamily: 'Courier New' }}>View Customer Details</MDBBtn>
                     </MDBCardBody>
                   </MDBCard>
                 </Col>
               </Row>
               <Row style={{ marginTop: '20px', marginBottom:'20px'}}>
-                <Col md={6}>
-                  <MDBCard
-                    style={{ height: '350px', borderRadius:'20px' }}
-                    onMouseEnter={() => handleCardHover(3)}
-                    onMouseLeave={handleCardLeave}
-                    className={hoveredCard === 3 ? 'hovered-card' : ''}
-                  >
-                    <MDBCardImage src='https://icon-library.com/images/reservation-icon-png/reservation-icon-png-29.jpg' style={{ objectFit: 'cover', height: '50%', borderRadius:'20px' }} />
-                    <MDBCardBody style={{ height: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflowY: 'auto' }}>
-                      <div>
-                        <MDBCardTitle style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>Reservation</MDBCardTitle>
-                      </div>
-                      <MDBCardText style={{ fontFamily: 'serif' }}>
-                        This section provides information about reservation.
-                      </MDBCardText>
-                      <MDBBtn onClick={handleViewReservation} style={{ fontFamily: 'Courier New' }}>View Reservation</MDBBtn>
-                    </MDBCardBody>
-                  </MDBCard>
-                </Col>
                 <Col md={6}>
                   <MDBCard
                     style={{ height: '350px', borderRadius:'20px' }}
@@ -226,40 +198,6 @@ const Tracks = () => {
                         <td>2</td>
                         <td>Gilbert Canete</td>
                         <td>gilbertcanete@gmail.com</td>
-                      </tr>
-                    </tbody>
-                  </Table>
-                </>
-              ) : showReservation ? (
-                <>
-                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center' }}>RESERVATION DETAIL</h3>
-                  <Table responsive>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Email</th>
-                        <th>Plate Number</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>1</td>
-                        <td>2023-07-01</td>
-                        <td>10:00 AM</td>
-                        <td>gilbertcanete@gmail.com</td>
-                        <td>ABC-123</td>
-                        <td>Ok</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>2023-07-02</td>
-                        <td>2:30 PM</td>
-                        <td>wakwak@gmail.com</td>
-                        <td>DEF-456</td>
-                        <td>Cancelled</td>
                       </tr>
                     </tbody>
                   </Table>
