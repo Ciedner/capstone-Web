@@ -17,6 +17,8 @@ const App = () => {
     name: '',
   });
   const [eventSubmitted, setEventSubmitted] = useState(false);
+  const [schedules, setSchedules] = useState([]); // Array to hold schedules
+  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0); // Index of the current schedule
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -24,12 +26,22 @@ const App = () => {
   };
 
   const handleEventFormSubmit = () => {
-    console.log('Event Data:', eventData);
-
+    const newSchedule = {
+      email: eventData.email,
+      timeIn: eventData.timeIn,
+      timeOut: eventData.timeOut,
+      name: eventData.name,
+    };
+    
+    setSchedules((prevSchedules) => [...prevSchedules, newSchedule]);
     setEventSubmitted(true);
-
-
     setShowEventForm(false);
+    setEventData({
+      email: '',
+      timeIn: '',
+      timeOut: '',
+      name: '',
+    });
   };
 
   const convertToAMPM = (time) => {
@@ -39,6 +51,20 @@ const App = () => {
     const formattedHours = parsedHours % 12 === 0 ? '12' : (parsedHours % 12).toString();
     return `${formattedHours}:${minutes} ${period}`;
   };
+
+  const handlePrevSchedule = () => {
+    setCurrentScheduleIndex((prevIndex) =>
+      prevIndex === 0 ? schedules.length - 1 : prevIndex - 1
+    );
+  };
+  
+  const handleNextSchedule = () => {
+    setCurrentScheduleIndex((prevIndex) =>
+      prevIndex === schedules.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const currentSchedule = schedules[currentScheduleIndex];
   const styles = {
     welcomeMessage: {
       position: "absolute",
@@ -78,7 +104,7 @@ const App = () => {
         </div>
       </nav>
       <div>
-      <MDBCardText style={{marginTop:'50px', textAlign:'center', fontSize:'40px', fontFamily:'Georgia',}}>
+      <MDBCardText style={{marginTop:'50px', textAlign:'center', fontSize:'40px', fontFamily:'Georgia', color:'white'}}>
           Set Agents Schedule
         </MDBCardText>
       </div>
@@ -104,29 +130,40 @@ const App = () => {
           </div>
         </nav>
         <table className="table">
-          <tbody>
-            <tr>
-              <td>Date:</td>
-              <td>{selectedDate.toDateString()}</td>
-            </tr>
-            <tr>
-              <td>Email:</td>
-              <td>{eventData.email}</td>
-            </tr>
-            <tr>
-              <td>Time In:</td>
-              <td>{convertToAMPM(eventData.timeIn)}</td>
-            </tr>
-            <tr>
-              <td>Time Out:</td>
-              <td>{convertToAMPM(eventData.timeOut)}</td>
-            </tr>
-            <tr>
-              <td>Agent Name:</td>
-              <td>{eventData.name}</td>
-            </tr>
-          </tbody>
+        <tbody>
+          <tr>
+            <td>Date:</td>
+            <td>{selectedDate.toDateString()}</td>
+          </tr>
+          <tr>
+            <td>Email:</td>
+            <td>{currentSchedule.email}</td>
+          </tr>
+          <tr>
+            <td>Time In:</td>
+            <td>{convertToAMPM(currentSchedule.timeIn)}</td>
+          </tr>
+          <tr>
+            <td>Time Out:</td>
+            <td>{convertToAMPM(currentSchedule.timeOut)}</td>
+          </tr>
+          <tr>
+            <td>Agent Name:</td>
+            <td>{currentSchedule.name}</td>
+          </tr>
+        </tbody>
+
         </table>
+        {schedules.length > 1 && (
+      <div className="slider-arrows d-flex justify-content-center mt-3">
+        <Button variant="outline-secondary" onClick={handlePrevSchedule} style={{backgroundColor:'white', marginRight:'10px'}}>
+          &lt; Prev
+        </Button>
+        <Button variant="outline-secondary" onClick={handleNextSchedule} style={{backgroundColor:'white'}}>
+          Next &gt;
+        </Button>
+      </div>
+    )}
       </Card.Body>
     </Card>
   )}
