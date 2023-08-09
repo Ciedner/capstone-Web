@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
-import { Container, Row, Col, Form, Button, Modal, Card } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Modal, Offcanvas } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { DropdownButton, Dropdown } from 'react-bootstrap';
@@ -10,6 +10,7 @@ import { MDBCardText } from 'mdb-react-ui-kit';
 const App = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showEventForm, setShowEventForm] = useState(false);
+  const [hoveredDate, setHoveredDate] = useState(null); 
   const [eventData, setEventData] = useState({
     email: '',
     timeIn: '',
@@ -17,16 +18,25 @@ const App = () => {
     name: '',
   });
   const [eventSubmitted, setEventSubmitted] = useState(false);
-  const [schedules, setSchedules] = useState([]); // Array to hold schedules
-  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0); // Index of the current schedule
+  const [schedules, setSchedules] = useState([]); 
 
+ 
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setShowEventForm(true);
   };
 
+  const handleHover = (date) => {
+    if (date) {
+      setHoveredDate(date);
+    } else {
+      setHoveredDate(null);
+    }
+  };
+
   const handleEventFormSubmit = () => {
     const newSchedule = {
+      date: selectedDate,
       email: eventData.email,
       timeIn: eventData.timeIn,
       timeOut: eventData.timeOut,
@@ -52,122 +62,126 @@ const App = () => {
     return `${formattedHours}:${minutes} ${period}`;
   };
 
-  const handlePrevSchedule = () => {
-    setCurrentScheduleIndex((prevIndex) =>
-      prevIndex === 0 ? schedules.length - 1 : prevIndex - 1
-    );
+
+  const calendarTileContent = ({ date, view }) => {
+    if (view === 'month') {
+      const matchingSchedules = schedules.filter(schedule =>
+        new Date(schedule.date).toDateString() === date.toDateString()
+      );
+  
+      if (matchingSchedules.length > 0) {
+        return (
+          <div
+            style={{
+              backgroundColor: '#ffcc00',
+              color: 'black',
+              fontSize: '12px',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              cursor: 'pointer', 
+            }}
+            onMouseEnter={() => handleHover(date)} 
+            onMouseLeave={() => handleHover(null)} 
+          >
+            {matchingSchedules.length} Schedule(s)
+          </div>
+        );
+      }
+    }
+    return null;
   };
   
-  const handleNextSchedule = () => {
-    setCurrentScheduleIndex((prevIndex) =>
-      prevIndex === schedules.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const currentSchedule = schedules[currentScheduleIndex];
-  const styles = {
-    welcomeMessage: {
-      position: "absolute",
-      top: "10px",
-      right: "10px",
-      margin: "0",
-      color: "#fff",
-      fontFamily: "Rockwell, sans-serif",
-      textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
-    },
-    icon: {
-      marginRight: "5px",
-    },
-  };
+  const hoveredSchedule = schedules.find(schedule =>
+    hoveredDate && new Date(schedule.date).toDateString() === hoveredDate.toDateString()
+  );
 
 
 
   return (
-    <Container style={{backgroundColor:'#385a7c', minHeight:'100vh', }}>
-     <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
-        <div className="container">
-          <Link className="navbar-brand" to="/">
-            SpotWise Parking Management System
-            </Link>
-            <p style={styles.welcomeMessage}>
-            <DropdownButton 
-                alignRight
-                variant="outline-light"
-                title={<FaUserCircle style={styles.icon} />}
-                id="dropdown-menu"
-              >
-                <Dropdown.Item href="Dashboard">Dashboard</Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item href="/">Logout</Dropdown.Item>
-              </DropdownButton>
-              </p>
-        </div>
-      </nav>
-      <div>
-      <MDBCardText style={{marginTop:'50px', textAlign:'center', fontSize:'40px', fontFamily:'Georgia', color:'white'}}>
-          Set Agents Schedule
-        </MDBCardText>
+    <Container fluid style={{ backgroundColor: 'white', minHeight: '100vh', padding: '0' }}>
+    <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'50px' }}>
+      <div className="container">
+        <Link className="navbar-brand" to="/">
+          SpotWise Parking Management System
+        </Link>
+        <p style={styles.welcomeMessage}>
+          <DropdownButton 
+            alignRight
+            variant="outline-light"
+            title={<FaUserCircle style={styles.icon} />}
+            id="dropdown-menu"
+          >
+            <Dropdown.Item href="Dashboard">Dashboard</Dropdown.Item>
+            <Dropdown.Divider />
+            <Dropdown.Item href="/">Logout</Dropdown.Item>
+          </DropdownButton>
+        </p>
       </div>
-    <Container style={{backgroundColor:'#8ad6cc', minHeight:'60vh', borderRadius:'10px'}}>
-    <Row className="mt-5">
-    <Col xs={12} md={5} className="mb-4 mb-md-0">
-      <div className="d-flex justify-content-center" style={{marginTop:'80px', marginLeft:'50px'}}> 
-        <Calendar value={selectedDate} onChange={handleDateChange} style={{marginTop:'50px'}} />
-      </div>
-    </Col>
-    <Col xs={12} md={7}>
-  {eventSubmitted && (
-    <Card className="mt-4" style={{top:'50px', right:'30px'}}>
-      <Card.Body style={{ backgroundColor: 'pink', textAlign: 'center' }}>
-      <nav
-        className="navbar navbar-expand-lg navbar-dark"
-        style={{ backgroundColor: '#003851', marginBottom: '10px'}}
-      >
-        <div className="container">
-          <a className="navbar-brand" href="">
-            Schedule Details
-          </a>
+    </nav>
+    <Row>
+     <Col xs={12} md={7} style={{ marginTop: '30px', height: '80vh', overflow: 'hidden' }}>
+        <div className="calendar-container">
+          <div className="calendar-navbar" style={{textAlign:'center', marginBottom:'10px', fontFamily:'Georgina', fontSize:'24px'}}>
+            CALENDAR
           </div>
-        </nav>
-        <table className="table">
-        <tbody>
-          <tr>
-            <td>Date:</td>
-            <td>{selectedDate.toDateString()}</td>
-          </tr>
-          <tr>
-            <td>Email:</td>
-            <td>{currentSchedule.email}</td>
-          </tr>
-          <tr>
-            <td>Time In:</td>
-            <td>{convertToAMPM(currentSchedule.timeIn)}</td>
-          </tr>
-          <tr>
-            <td>Time Out:</td>
-            <td>{convertToAMPM(currentSchedule.timeOut)}</td>
-          </tr>
-          <tr>
-            <td>Agent Name:</td>
-            <td>{currentSchedule.name}</td>
-          </tr>
-        </tbody>
-
-        </table>
-        {schedules.length > 1 && (
-      <div className="slider-arrows d-flex justify-content-center mt-3">
-        <Button variant="outline-secondary" onClick={handlePrevSchedule} style={{backgroundColor:'white', marginRight:'10px'}}>
-          &lt; Prev
-        </Button>
-        <Button variant="outline-secondary" onClick={handleNextSchedule} style={{backgroundColor:'white'}}>
-          Next &gt;
-        </Button>
-      </div>
-    )}
-      </Card.Body>
-    </Card>
-  )}
-</Col>
+          <div className="calendar-content">
+            <div className="d-flex justify-content-center">
+              <Calendar
+                value={selectedDate}
+                onChange={handleDateChange}
+                tileContent={calendarTileContent}
+                style={{ marginTop: '50px' }}
+                onMouseOver={({ date }) => handleHover(date)}
+              />
+            </div>
+          </div>
+        </div>
+      </Col>
+      <Col xs={12} md={5} style={{marginTop: '70px', }}>
+        <div className="schedule-details-container">
+          {hoveredSchedule && (
+            <div
+              className="mt-4"
+              style={{
+                position: 'sticky',
+                top: '80px',
+                backgroundColor: 'pink',
+                textAlign: 'center',
+                marginRight:'120px',
+                zIndex: 1000,
+                padding: '10px',
+                borderRadius:'15px'
+              }}
+            >
+              <h5>Schedule Details</h5>
+              <table className="table">
+                <tbody>
+                  <tr>
+                    <td>Date:</td>
+                    <td>{hoveredDate.toDateString()}</td>
+                  </tr>
+                  <tr>
+                    <td>Email:</td>
+                    <td>{hoveredSchedule.email}</td>
+                  </tr>
+                  <tr>
+                    <td>Time In:</td>
+                    <td>{convertToAMPM(hoveredSchedule.timeIn)}</td>
+                  </tr>
+                  <tr>
+                    <td>Time Out:</td>
+                    <td>{convertToAMPM(hoveredSchedule.timeOut)}</td>
+                  </tr>
+                  <tr>
+                    <td>Agent Name:</td>
+                    <td>{hoveredSchedule.name}</td>
+                  </tr>
+                </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </Col>
       </Row>
       <Modal show={showEventForm} onHide={() => setShowEventForm(false)}>
         <Modal.Header closeButton style={{backgroundColor:'black',}}>
@@ -235,8 +249,22 @@ const App = () => {
         </Modal.Footer>
       </Modal>
     </Container>
-   </Container>
   );
+};
+
+const styles = {
+  welcomeMessage: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    margin: "0",
+    color: "#fff",
+    fontFamily: "Rockwell, sans-serif",
+    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+  },
+  icon: {
+    marginRight: "5px",
+  },
 };
 
 export default App;

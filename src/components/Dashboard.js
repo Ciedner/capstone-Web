@@ -17,7 +17,7 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faChartColumn, faBars, faPlus, faCar, faUser, faCoins, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faChartColumn, faAddressCard, faPlus, faCar, faUser, faCoins, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 
 const listItemStyle = {
   display: "flex",
@@ -112,11 +112,6 @@ const Establishment = () => {
                 <p className="text-muted mb-4" style={{ fontFamily: 'Courier New' }}>
                   {establishmentData && establishmentData.address}
                 </p>
-                <div className="d-flex justify-content-center mb-2">
-                  <button className="btn btn-primary" onClick={handleProfile}>
-                    View Profile
-                  </button>
-                </div>
               </MDBCardBody>
             </MDBCard>
 
@@ -129,8 +124,8 @@ const Establishment = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
-                    <FontAwesomeIcon icon={faBars} />
-                    <MDBCardText>Dashboard</MDBCardText>
+                    <FontAwesomeIcon icon={faAddressCard} />
+                    <MDBCardText onClick={() => handleProfile()}>Profile</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem style={listItemStyle}
                     hover
@@ -157,7 +152,7 @@ const Establishment = () => {
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
                     <FontAwesomeIcon icon={faChartColumn} />
-                    <MDBCardText onClick={() => handleRevenues()}>View Parking Area Tracks</MDBCardText>
+                    <MDBCardText onClick={() => handleRevenues()}>Management Details</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem style={listItemStyle}
                     hover
