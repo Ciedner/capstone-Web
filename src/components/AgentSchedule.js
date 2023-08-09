@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import { useNavigate, Link } from "react-router-dom";
 
 function Calendar() {
   const [showModal, setShowModal] = useState(false);
@@ -17,13 +18,16 @@ function Calendar() {
   const [eventEmail, setEventEmail] = useState("");
   const [eventAgentName, setEventAgentName] = useState("");
   const [events, setEvents] = useState([]);
+  const navigate = useNavigate();
 
-  // Create state variables for form field validation
+
   const [isTitleValid, setIsTitleValid] = useState(true);
   const [isStartDateValid, setIsStartDateValid] = useState(true);
   const [isEndDateValid, setIsEndDateValid] = useState(true);
-  // ... create similar variables for other fields
 
+  const handleButtonClick = () => {
+    navigate("/Dashboard");
+  };
   const handleModalOpen = () => {
     setShowModal(true);
   };
@@ -33,7 +37,6 @@ function Calendar() {
   };
 
   const handleEventSubmit = () => {
-    // Perform form validation
     let isValid = true;
 
     if (!eventTitle) {
@@ -57,12 +60,9 @@ function Calendar() {
       setIsEndDateValid(true);
     }
 
-    // Add similar validation checks for other fields
-    
-
     if (isValid) {
-      const CST_OFFSET = 8 * 60; // China Standard Time offset in minutes (UTC+8)
-      const PST_OFFSET = 8 * 60; // Philippine Standard Time offset in minutes (UTC+8);
+      const CST_OFFSET = 8 * 60; 
+      const PST_OFFSET = 8 * 60; 
 
       const startDateTime = new Date(
         `${eventStartDate.toISOString().split("T")[0]}T${eventStartTime}`
@@ -71,12 +71,8 @@ function Calendar() {
       const endDateTime = new Date(
         `${eventEndDate.toISOString().split("T")[0]}T${eventEndTime}`
       );
-
-      // Convert to UTC timestamps
       const startTimestamp = startDateTime.getTime() + CST_OFFSET * 60000;
       const endTimestamp = endDateTime.getTime() + CST_OFFSET * 60000;
-
-      // Adjust to Philippine Standard Time
       startDateTime.setTime(startTimestamp + PST_OFFSET * 60000);
       endDateTime.setTime(endTimestamp + PST_OFFSET * 60000);
 
@@ -87,7 +83,11 @@ function Calendar() {
         email: eventEmail,
         name: eventAgentName,
       };
-
+      if (emailColorMap[eventEmail]) {
+        newEvent.backgroundColor = emailColorMap[eventEmail];
+      } else {
+        newEvent.backgroundColor = "gray"; 
+      }
       setEvents([...events, newEvent]);
       setEventTitle("");
       setEventStartDate(new Date());
@@ -103,7 +103,6 @@ function Calendar() {
   const handleEventClick = (info) => {
     const clickedEvent = info.event;
 
-    // Convert start and end dates to PST time zone
     const clickedEventDetails = {
       title: clickedEvent.title,
       start: clickedEvent.start.toLocaleString("en-PH", {
@@ -116,15 +115,18 @@ function Calendar() {
       name: clickedEvent.extendedProps.name,
     };
 
-    // Open a modal with the clicked event details
-    alert(
+
+    alert( 
       `Event Details:\nTitle: ${clickedEventDetails.title}\nStart: ${clickedEventDetails.start}\nEnd: ${clickedEventDetails.end}\nEmail: ${clickedEventDetails.email}\nAgent Name: ${clickedEventDetails.name}`
     );
   };
-
+  const emailColorMap = {
+    "richardm@gmail.com": "blue",
+    "markym@gmail.com": "green",
+  };
   return (
-    <div>
-      <FullCalendar
+    <div style={{fontFamily:'Georgina', fontSize:'20px'}}>
+      <FullCalendar 
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         headerToolbar={{
@@ -141,7 +143,10 @@ function Calendar() {
       <Button onClick={handleModalOpen} style={{ marginTop: "20px", marginLeft: "100vh" }}>
         Add Event
       </Button>
-      <Modal show={showModal} onHide={handleModalClose}>
+      <Button  onClick={handleButtonClick} style={{ marginTop: "20px", marginLeft: "10px", backgroundColor:'GrayText' }}>
+        Dashboard
+      </Button>
+      <Modal show={showModal} onHide={handleModalClose} style={{fontFamily:'Georgina', fontSize:'18px'}}>
         <Modal.Header closeButton>
           <Modal.Title>Add Event</Modal.Title>
         </Modal.Header>
