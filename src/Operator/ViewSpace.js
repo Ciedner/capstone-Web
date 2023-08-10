@@ -1,99 +1,73 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
+import { Button, Row, Col} from 'react-bootstrap';
 import { Container, Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 
-const ParkingBlock = ({ id, occupied, onClick }) => {
-  const blockStyle = {
-    width: '50px',
-    height: '50px',
-    backgroundColor: occupied ? 'red' : 'green',
-    margin: '5px',
-    cursor: 'pointer',
+const ParkingSlot = () => {
+    const styles = {
+        welcomeMessage: {
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          margin: "0",
+          color: "#fff",
+          fontFamily: "Rockwell, sans-serif",
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+        },
+        icon: {
+          marginRight: "5px",
+        },
+      };
+  const maxZones = 5;
+  const initialSlotSets = [{ title: 'Zone 1', slots: Array(15).fill(false) }];
+  
+  const initialTotalSpaces = initialSlotSets.map(zone => zone.slots.length).reduce((total, spaces) => total + spaces, 0);
+
+  const [slotSets, setSlotSets] = useState(initialSlotSets);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [zoneAvailableSpaces, setZoneAvailableSpaces] = useState(
+    initialSlotSets.map(zone => zone.slots.length)
+  );
+
+  const toggleOccupancy = (setIndex, boxIndex) => {
+    const updatedSets = [...slotSets];
+    const isOccupied = updatedSets[setIndex].slots[boxIndex];
+    updatedSets[setIndex].slots[boxIndex] = !isOccupied;
+    setSlotSets(updatedSets);
+  
+    const updatedAvailableSpaces = [...zoneAvailableSpaces];
+    updatedAvailableSpaces[setIndex] += isOccupied ? 1 : -1;
+    setZoneAvailableSpaces(updatedAvailableSpaces);
   };
 
-  return <div style={blockStyle} onClick={() => onClick(id)} />;
-};
+  const rows = 5;
+  const cols = 3;
 
-const styles = {
-  welcomeMessage: {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    margin: "0",
-    color: "#fff",
-    fontFamily: "Rockwell, sans-serif",
-    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
-  },
-  icon: {
-    marginRight: "5px",
-  },
-};
-
-const ParkingLot = () => {
-  const [parkingSpaces, setParkingSpaces] = useState([]);
-  const [numSpaces, setNumSpaces] = useState(0);
-
-  const handleBlockClick = (id) => {
-    const updatedSpaces = parkingSpaces.map((space) => {
-      if (space.id === id) {
-        return {
-          ...space,
-          occupied: !space.occupied,
-        };
+  const handleNext = () => {
+    if (currentSetIndex === slotSets.length - 1) {
+      if (slotSets.length < maxZones) {
+        setSlotSets(prevSets => [
+          ...prevSets,
+          { title: `Zone ${prevSets.length + 1}`, slots: Array(15).fill(false) },
+        ]);
+        setZoneAvailableSpaces(prevSpaces => [...prevSpaces, 15]); 
+        setCurrentSetIndex(currentSetIndex + 1);
       }
-      return space;
-    });
-
-    setParkingSpaces(updatedSpaces);
+    } else {
+      setCurrentSetIndex(currentSetIndex + 1);
+    }
   };
 
-  const handleInput = (e) => {
-    const value = parseInt(e.target.value);
-    setNumSpaces(value);
-
-    const newParkingSpaces = [];
-
-    for (let i = 1; i <= value; i++) {
-      newParkingSpaces.push({ id: i, occupied: false });
+  const handlePrev = () => {
+    if (currentSetIndex > 0) {
+      setCurrentSetIndex(currentSetIndex - 1);
     }
-
-    setParkingSpaces(newParkingSpaces);
-  };
-
-  const generateParkingBlocks = () => {
-    const blocksPerRow = 5;
-    const rows = Math.ceil(numSpaces / blocksPerRow);
-    const newParkingSpaces = [];
-
-    for (let i = 1; i <= numSpaces; i++) {
-      const occupied = i <= parkingSpaces.length ? parkingSpaces[i - 1].occupied : false;
-      newParkingSpaces.push({ id: i, occupied });
-    }
-
-    const slicedBlocks = [];
-    for (let i = 0; i < rows; i++) {
-      slicedBlocks.push(newParkingSpaces.slice(i * blocksPerRow, (i + 1) * blocksPerRow));
-    }
-
-    return slicedBlocks.map((row, index) => (
-      <div key={index} style={{ display: 'flex', flexDirection: 'row' }}>
-        {row.map((space) => (
-          <ParkingBlock
-            key={space.id}
-            id={space.id}
-            occupied={space.occupied}
-            onClick={handleBlockClick}
-          />
-        ))}
-      </div>
-    ));
   };
 
   return (
-    <div style={{ backgroundColor: '#3b89ac', minHeight: "100vh"}}>
-    <Container>
-       < nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
+    <div style={{ textAlign: 'center',  }}>
+        < nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
         <div className="container">
           <Link className="navbar-brand" to="/">
             SpotWise Parking Management System
@@ -112,47 +86,61 @@ const ParkingLot = () => {
               </p>
         </div>
       </nav>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'Courier New', fontSize: '20px', fontWeight: 'bold', marginTop:'75px', backgroundColor:'#bfd2d9', borderRadius:'15px'}}>
-        <h2>Parking Lot</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
-            <h3 style={{ marginRight: '20px', textAlign: 'center' }}>Basement</h3>
-            {generateParkingBlocks().slice(0, 5)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
-            <h3 style={{ marginRight: '20px', textAlign: 'center' }}>Floor 1</h3>
-            {generateParkingBlocks().slice(5, 10)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
-            <h3 style={{ marginRight: '20px', textAlign: 'center' }}>Floor 2</h3>
-            {generateParkingBlocks().slice(10, 15)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ marginRight: '20px', textAlign: 'center' }}>Floor 3</h3>
-            {generateParkingBlocks().slice(15, 20)}
-          </div>
+            <div style={{ textAlign: 'center', fontSize: '15px', marginTop:'10px'}}>
+                    <h3>{slotSets[currentSetIndex].title}</h3>
+          <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
+          <span>  Total Parking Spaces: {initialTotalSpaces}</span>
+          <br />
+          <span> Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
         </div>
-        <div style={{marginTop:'20px', marginBottom:'20px'}}>
-          <label>Number of parking spaces: </label>
-          <input
-            type="number"
-            value={numSpaces}
-            onChange={handleInput}
-            min="0"
-            max="250"
-            style={{ marginTop: '10px' }}
-          />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
-        <ParkingBlock  occupied={false} />  
-        <span style={{ marginLeft: '5px' }}>Available</span>
-        <ParkingBlock    occupied={true}/>
-        <span style={{ marginLeft: '5px' }}>Occupied</span>
+        <div style={{ textAlign: 'center', marginTop: '5px', fontSize:'15px'}}>
+            <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'green', marginRight: '10px' }}></div>
+                <span>Available</span>
+                     <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'red', marginLeft: '20px', marginRight: '10px' }}></div>
+                 <span>Occupied</span>
+            </div>
+        <div style={{textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginTop: '5px', marginLeft:'450px', marginBottom:'5px'}}>
+          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
+          <Button onClick={handleNext}>Next</Button>
+        </div>
+      <div
+        style={{
+          display:'grid',
+          gridTemplateRows: `auto repeat(${rows}, 1fr)`,
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gap: '10px',
+          maxWidth: '600px',
+          margin: '0 auto',
+          border: '5px solid black',
+          padding: '25px',
+       
+          maxHeight:'500px',
+          marginBottom: '20px'
+        }}
+      >
+        {slotSets[currentSetIndex].slots.map((isOccupied, index) => (
+          <div
+            key={index}
+            style={{
+              width: '90px',
+              height: '80px',
+              backgroundColor: isOccupied ? 'red' : 'green',
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              marginLeft: '35px',
+            }}
+            onClick={() => toggleOccupancy(currentSetIndex, index)}
+          >
+            {index + 1}
+          </div>
+        ))}
       </div>
-      </div>
-    </Container>
     </div>
   );
 };
 
-export default ParkingLot;
+export default ParkingSlot;

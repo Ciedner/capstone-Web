@@ -1,7 +1,24 @@
 import React, { useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Row, Col} from 'react-bootstrap';
+import { Container, Dropdown, DropdownButton } from 'react-bootstrap';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FaUserCircle } from "react-icons/fa";
 
 const ParkingSlot = () => {
+    const styles = {
+        welcomeMessage: {
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          margin: "0",
+          color: "#fff",
+          fontFamily: "Rockwell, sans-serif",
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+        },
+        icon: {
+          marginRight: "5px",
+        },
+      };
   const maxZones = 5;
   const initialSlotSets = [{ title: 'Zone 1', slots: Array(15).fill(false) }];
   
@@ -34,7 +51,7 @@ const ParkingSlot = () => {
           ...prevSets,
           { title: `Zone ${prevSets.length + 1}`, slots: Array(15).fill(false) },
         ]);
-        setZoneAvailableSpaces(prevSpaces => [...prevSpaces, 15]); // Assuming 15 slots per zone
+        setZoneAvailableSpaces(prevSpaces => [...prevSpaces, 15]); 
         setCurrentSetIndex(currentSetIndex + 1);
       }
     } else {
@@ -49,24 +66,58 @@ const ParkingSlot = () => {
   };
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      <h1>Parking Lot</h1>
+    <div style={{ textAlign: 'center',  }}>
+        < nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
+        <div className="container">
+          <Link className="navbar-brand" to="/">
+            SpotWise Parking Management System
+          </Link>
+          <p style={styles.welcomeMessage}>
+            <DropdownButton 
+            variant="outline-light"
+                alignRight
+                title={<FaUserCircle style={styles.icon} />}
+                id="dropdown-menu"
+              >
+                <Dropdown.Item href="OperatorDashboard">Dashboard</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item href="/">Logout</Dropdown.Item>
+              </DropdownButton>
+              </p>
+        </div>
+      </nav>
+            <div style={{ textAlign: 'center', fontSize: '15px', marginTop:'10px'}}>
+                    <h3>{slotSets[currentSetIndex].title}</h3>
+          <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
+          <span>  Total Parking Spaces: {initialTotalSpaces}</span>
+          <br />
+          <span> Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
+        </div>
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '10px', fontSize:'15px'}}>
+            <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'green', marginRight: '10px' }}></div>
+                <span>Available</span>
+                     <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'red', marginLeft: '20px', marginRight: '10px' }}></div>
+                 <span>Occupied</span>
+            </div>
+        <div style={{textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginTop: '10px', marginLeft:'450px'}}>
+          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
+          <Button onClick={handleNext}>Next</Button>
+        </div>
       <div
         style={{
-          display: 'grid',
+          display:'grid',
           gridTemplateRows: `auto repeat(${rows}, 1fr)`,
           gridTemplateColumns: `repeat(${cols}, 1fr)`,
           gap: '10px',
           maxWidth: '600px',
           margin: '0 auto',
-          border: '2px solid black',
+          border: '5px solid black',
           padding: '25px',
-          marginTop: '50px',
+          marginTop: '10px',
+          maxHeight:'500px'
         }}
       >
-        <div style={{ gridColumn: '1 / -1', textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginBottom: '20px' }}>
-          {slotSets[currentSetIndex].title}
-        </div>
         {slotSets[currentSetIndex].slots.map((isOccupied, index) => (
           <div
             key={index}
@@ -86,21 +137,6 @@ const ParkingSlot = () => {
             {index + 1}
           </div>
         ))}
-        <div style={{ gridColumn: '1 / -1', textAlign: 'right', fontSize: '20px', fontWeight: 'bold', marginTop: '20px', marginRight: '50px' }}>
-          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
-          <Button onClick={handleNext}>Next</Button>
-        </div>
-        <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '20px' }}>
-          <div style={{ display: 'inline-block', width: '20px', height: '20px', backgroundColor: 'green', marginRight: '10px' }}></div>
-          <span>Available</span>
-          <div style={{ display: 'inline-block', width: '20px', height: '20px', backgroundColor: 'red', marginLeft: '20px', marginRight: '10px' }}></div>
-          <span>Occupied</span>
-        </div>
-        <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '20px' }}>
-          <span> {slotSets[currentSetIndex].title} Total Parking Spaces: {initialTotalSpaces}</span>
-          <br />
-          <span> {slotSets[currentSetIndex].title} Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
-        </div>
       </div>
     </div>
   );
