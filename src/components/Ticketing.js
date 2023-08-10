@@ -4,22 +4,25 @@ import { Button } from 'react-bootstrap';
 const ParkingSlot = () => {
   const maxZones = 5;
   const initialSlotSets = [{ title: 'Zone 1', slots: Array(15).fill(false) }];
-  const initialTotalSpaces = initialSlotSets[0].slots.length * initialSlotSets.length;
+  
+  const initialTotalSpaces = initialSlotSets.map(zone => zone.slots.length).reduce((total, spaces) => total + spaces, 0);
 
   const [slotSets, setSlotSets] = useState(initialSlotSets);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
-  const [availableSpaces, setAvailableSpaces] = useState(initialTotalSpaces);
+  const [zoneAvailableSpaces, setZoneAvailableSpaces] = useState(
+    initialSlotSets.map(zone => zone.slots.length)
+  );
 
   const toggleOccupancy = (setIndex, boxIndex) => {
     const updatedSets = [...slotSets];
-    updatedSets[setIndex].slots[boxIndex] = !updatedSets[setIndex].slots[boxIndex];
+    const isOccupied = updatedSets[setIndex].slots[boxIndex];
+    updatedSets[setIndex].slots[boxIndex] = !isOccupied;
     setSlotSets(updatedSets);
   
-    const occupiedSpaces = updatedSets.reduce((total, set) => total + set.slots.filter(slot => slot).length, 0);
-    const updatedAvailableSpaces = initialTotalSpaces - occupiedSpaces;
-    setAvailableSpaces(updatedAvailableSpaces);
+    const updatedAvailableSpaces = [...zoneAvailableSpaces];
+    updatedAvailableSpaces[setIndex] += isOccupied ? 1 : -1;
+    setZoneAvailableSpaces(updatedAvailableSpaces);
   };
-  
 
   const rows = 5;
   const cols = 3;
@@ -31,6 +34,7 @@ const ParkingSlot = () => {
           ...prevSets,
           { title: `Zone ${prevSets.length + 1}`, slots: Array(15).fill(false) },
         ]);
+        setZoneAvailableSpaces(prevSpaces => [...prevSpaces, 15]); // Assuming 15 slots per zone
         setCurrentSetIndex(currentSetIndex + 1);
       }
     } else {
@@ -83,8 +87,8 @@ const ParkingSlot = () => {
           </div>
         ))}
         <div style={{ gridColumn: '1 / -1', textAlign: 'right', fontSize: '20px', fontWeight: 'bold', marginTop: '20px', marginRight: '50px' }}>
-          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }} disabled={currentSetIndex === 0}>Prev</Button>
-          <Button onClick={handleNext} disabled={slotSets.length >= maxZones}>Next</Button>
+          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
+          <Button onClick={handleNext}>Next</Button>
         </div>
         <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '20px' }}>
           <div style={{ display: 'inline-block', width: '20px', height: '20px', backgroundColor: 'green', marginRight: '10px' }}></div>
@@ -93,9 +97,9 @@ const ParkingSlot = () => {
           <span>Occupied</span>
         </div>
         <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '20px' }}>
-          <span>Total Parking Spaces: {initialTotalSpaces}</span>
+          <span> {slotSets[currentSetIndex].title} Total Parking Spaces: {initialTotalSpaces}</span>
           <br />
-          <span>Available Spaces: {availableSpaces}</span>
+          <span> {slotSets[currentSetIndex].title} Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
         </div>
       </div>
     </div>
