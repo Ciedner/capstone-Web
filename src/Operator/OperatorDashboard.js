@@ -146,10 +146,23 @@ function OperatorDashboard() {
                 title={<FaUserCircle style={styles.icon} />}
                 id="dropdown-menu"
               >
-                <Dropdown.Item href="OperatorProfile">Profile</Dropdown.Item>
-                <Dropdown.Item href="ViewSpace">View Parking Slots</Dropdown.Item>
+                <Dropdown.Item href="OperatorProfile">
+                <img
+                        src="opname.jpg"
+                        alt="Operator Profile Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Profile</Dropdown.Item>
+                <Dropdown.Item href="ViewSpace"><img
+                        src="slot1.jpeg"
+                        alt="Operator Parking Slot Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />View Parking Slots</Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item href="/">Logout</Dropdown.Item>
+                <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
               </DropdownButton>
               </p>
         </div>
@@ -235,7 +248,7 @@ function OperatorDashboard() {
           )}
         </div>
         </div>
-        <div style={{marginLeft:'100px', marginTop: '20px', textAlign: 'center', justifyContent: 'center',  width: '70%'}}>
+        <div style={{marginLeft:'100px', marginTop: '20px', textAlign: 'center', justifyContent: 'center',  width: '70%', fontFamily:'Garamond'}}>
           <Table responsive>
             <thead>
               <tr>

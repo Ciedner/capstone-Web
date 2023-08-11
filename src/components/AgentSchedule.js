@@ -7,6 +7,8 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useNavigate, Link } from "react-router-dom";
+import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { FaUserCircle } from "react-icons/fa";
 
 function Calendar() {
   const [showModal, setShowModal] = useState(false);
@@ -19,6 +21,21 @@ function Calendar() {
   const [eventAgentName, setEventAgentName] = useState("");
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
+
+  const styles = {
+    welcomeMessage: {
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      margin: "0",
+      color: "#fff",
+      fontFamily: "Rockwell, sans-serif",
+      textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+    },
+    icon: {
+      marginRight: "5px",
+    },
+  };
 
 
   const [isTitleValid, setIsTitleValid] = useState(true);
@@ -126,6 +143,53 @@ function Calendar() {
   };
   return (
     <div style={{fontFamily:'Georgina', fontSize:'20px'}}>
+      <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'20px' }}>
+        <div className="container">
+          <Link className="navbar-brand" to="/Dashboard">
+            SpotWise Parking Management System
+          </Link>
+          <p style={styles.welcomeMessage}>
+          <DropdownButton 
+                alignRight
+                variant="outline-light"
+                title={<FaUserCircle style={styles.icon} />}
+                id="dropdown-menu"
+              > 
+              <Dropdown.Item href="Dashboard"><img
+                        src="dashboard.jpg"
+                        alt="Operator Dashboard Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
+              <Dropdown.Item href="AgentRegistration"><img
+                        src="registerA.jpg"
+                        alt="Agent Register"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Register Ticket Operator</Dropdown.Item> 
+              <Dropdown.Item href="OperatorDashboard"><img
+                        src="infoPark.png"
+                        alt="Parking Info"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Ticket Information</Dropdown.Item> 
+              <Dropdown.Item href="Tracks"><img
+                        src="management.jpg"
+                        alt="Management Details"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Management Details</Dropdown.Item>    
+              <Dropdown.Item href="Feedback"><img
+                        src="feedback.jpg"
+                        alt="Feedback"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Feedback</Dropdown.Item>    
+              <Dropdown.Divider />
+                <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
+              </DropdownButton>
+          </p>
+        </div>
+      </nav>
       <FullCalendar 
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
@@ -140,11 +204,8 @@ function Calendar() {
         timeZone="Asia/Manila"
         locale="en"
       />
-      <Button onClick={handleModalOpen} style={{ marginTop: "20px", marginLeft: "100vh" }}>
+      <Button onClick={handleModalOpen} style={{ marginTop: "10px", marginLeft: "100vh" }}>
         Add Event
-      </Button>
-      <Button  onClick={handleButtonClick} style={{ marginTop: "20px", marginLeft: "10px", backgroundColor:'GrayText' }}>
-        Dashboard
       </Button>
       <Modal show={showModal} onHide={handleModalClose} style={{fontFamily:'Georgina', fontSize:'18px'}}>
         <Modal.Header closeButton>

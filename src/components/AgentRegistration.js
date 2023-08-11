@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { db } from '../config/firebase';
 import { addDoc, collection } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { DropdownButton, Dropdown, Button } from 'react-bootstrap';
+import { FaUserCircle } from "react-icons/fa";
 
 function CreateAccount() {
   const [firstName, setFirstName] = useState('');
@@ -12,9 +14,27 @@ function CreateAccount() {
   const [address, setAddress] = useState('');
   const [selectedRadioOption, setSelectedRadioOption] = useState('');
 
+  const styles = {
+    welcomeMessage: {
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      margin: "0",
+      color: "#fff",
+      fontFamily: "Rockwell, sans-serif",
+      textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+    },
+    icon: {
+      marginRight: "5px",
+    },
+  };
+  
   const navigate = useNavigate();
   const collectionRef = collection(db, 'agents');
 
+  const handleBack = () => {
+    navigate("/Dashboard");
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -74,12 +94,12 @@ function CreateAccount() {
     borderRadius: '10px',
     boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
     width: '400px',
-    marginTop: '50px',
+    marginTop:'20px'
   };
 
   const inputGroupStyle = {
     marginBottom: '15px',
-    marginRight: '30px',
+    marginRight: '10px',
     marginTop: '10px'
   };
 
@@ -90,6 +110,7 @@ function CreateAccount() {
     border: '1px solid #ccc',
     borderRadius: '5px',
     fontSize: '16px',
+    fontFamily:'Georgina'
   };
 
   const buttonStyle = {
@@ -103,28 +124,59 @@ function CreateAccount() {
     fontSize: '18px',
   };
 
-  const navbarStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '20px',
-    backgroundColor: 'black',
-    color: 'white',
-    width: '100%',
-  };
-
-  const logoStyle = {
-    fontSize: '24px',
-    fontWeight: 'bold',
-  };
 
   return (
-    <div style={containerStyle}>
-      <div style={navbarStyle}>
-        <div style={logoStyle}>SpotWise Parking Management System</div>
-      </div>
+    <div style={{ backgroundColor: 'white',}}>
+     <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'20px' }}>
+        <div className="container">
+          <Link className="navbar-brand" to="/Dashboard">
+            SpotWise Parking Management System
+          </Link>
+          <p style={styles.welcomeMessage}>
+          <DropdownButton 
+                alignRight
+                variant="outline-light"
+                title={<FaUserCircle style={styles.icon} />}
+                id="dropdown-menu"
+              > 
+              <Dropdown.Item href="Dashboard"><img
+                        src="dashboard.jpg"
+                        alt="Operator Dashboard Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
+              <Dropdown.Item href="AgentSchedule"><img
+                        src="calendar.webp"
+                        alt="Agent Schedule"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Agent Schedule </Dropdown.Item> 
+              <Dropdown.Item href="OperatorDashboard"><img
+                        src="infoPark.png"
+                        alt="Parking Info"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Ticket Information</Dropdown.Item> 
+              <Dropdown.Item href="Tracks"><img
+                        src="management.jpg"
+                        alt="Management Details"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Management Details</Dropdown.Item>    
+              <Dropdown.Item href="Feedback"><img
+                        src="feedback.jpg"
+                        alt="Feedback"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Feedback</Dropdown.Item>    
+              <Dropdown.Divider />
+                <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
+              </DropdownButton>
+          </p>
+        </div>
+      </nav>
+      <div style={containerStyle}>
       <div style={formContainerStyle}>
-        <h4 style={{ textAlign: 'center', marginBottom: '20px', fontSize: '18px'}}>Create an Agent Account</h4>
+        <h4 style={{ textAlign: 'center', marginBottom: '20px', fontSize: '18px', fontFamily:'Georgina'}}>CREATE AGENT ACCOUNT</h4>
         <form onSubmit={handleSubmit}>
           <div style={inputGroupStyle}>
             <input
@@ -187,29 +239,28 @@ function CreateAccount() {
             />
           </div>
           <div style={inputGroupStyle}>
-            <label style={{marginRight: '20px'}}>
+            <label style={{marginRight: '20px', fontFamily:'Georgina'}}>
               <input
                 type="radio"
                 value="Male"
                 checked={selectedRadioOption === 'Male'}
                 onChange={handleRadioChange}
-              />
-              Male
+              /> Male
             </label>
-            <label>
+            <label style={{fontFamily:'Georgina'}} >
               <input
                 type="radio"
                 value="Female"
                 checked={selectedRadioOption === 'Female'}
                 onChange={handleRadioChange}
-              />
-             Female
+              />  Female
             </label>
           </div>
           <button type="submit" style={buttonStyle}>
-            Sign Up
+            Register
           </button>
         </form>
+      </div>
       </div>
     </div>
   );

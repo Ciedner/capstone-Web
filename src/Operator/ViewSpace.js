@@ -66,7 +66,7 @@ const ParkingSlot = () => {
   };
 
   return (
-    <div style={{ textAlign: 'center',  }}>
+    <div style={{ textAlign: 'center' }}>
         < nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
         <div className="container">
           <Link className="navbar-brand" to="/">
@@ -79,9 +79,23 @@ const ParkingSlot = () => {
                 title={<FaUserCircle style={styles.icon} />}
                 id="dropdown-menu"
               >
-                <Dropdown.Item href="OperatorDashboard">Dashboard</Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item href="/">Logout</Dropdown.Item>
+                <Dropdown.Item href="OperatorDashboard"><img
+                        src="dashboard.jpg"
+                        alt="Operator Dashboard Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
+                      <Dropdown.Item href="OperatorProfile">
+                <img
+                        src="opname.jpg"
+                        alt="Operator Profile Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Profile</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
               </DropdownButton>
               </p>
         </div>

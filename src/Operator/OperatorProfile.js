@@ -20,6 +20,10 @@ export default function EditButton() {
   const [location, setLocation] = useState("Carmen, Cebu"); 
   const [email, setEmail] = useState("richardm@gmail.com"); 
   const [contactNumber, setContactNumber] = useState("01234567890"); 
+  const [companyName, setCompanyName] = useState("Marky Parking Establishment"); 
+  const [companyAddress, setCompanyAddress] = useState("Talamban, Cebu City"); 
+  const [companyContact, setCompanyContact] = useState("091234567890"); 
+  const [companyEmail, setCompanyEmail] = useState("markiesparkinglot@gmail.com"); 
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
@@ -62,9 +66,22 @@ export default function EditButton() {
               title={<FaUserCircle style={styles.icon} />}
               id="dropdown-menu"
             >
-              <Dropdown.Item href="OperatorDashboard">Dashboard</Dropdown.Item>
+              <Dropdown.Item href="OperatorDashboard"><img
+                        src="dashboard.jpg"
+                        alt="Operator Dashboard Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
+                        <Dropdown.Item href="ViewSpace"><img
+                        src="slot1.jpeg"
+                        alt="Operator Parking Slot Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />View Parking Slots</Dropdown.Item>
               <Dropdown.Divider />
-              <Dropdown.Item href="/">Logout</Dropdown.Item>
+              <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
             </DropdownButton>
           </p>
         </div>
@@ -78,69 +95,98 @@ export default function EditButton() {
                   <MDBCardImage src="richard.jpg"
                     alt="Generic placeholder image" className="mt-4 mb-2 img-thumbnail" fluid style={{ width: '150px', zIndex: '1' }} />
                 </div>
-                <div className="ms-3" style={{ marginTop: '130px' }}>
+                <div className="ms-3" style={{ marginTop: '130px', fontFamily:'Georgina'}}>
                   {isEditing ? (
                     <>
-                      <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                      <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={{marginRight:'5px', marginBottom:'5px'}} />
                       <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
-                      <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{marginRight:'5px'}} />
+                      <input type="text" placeholder="Contact Number" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} />
                     </>
                   ) : (
                     <>
                       <MDBTypography tag="h5">{name}</MDBTypography>
                       <MDBCardText>{location}</MDBCardText>
                       <MDBCardText>{email}</MDBCardText>
+                      <MDBCardText>{contactNumber}</MDBCardText>
                     </>
                   )}
                 </div>
               </div>
-              <div className="p-4 text-black" style={{ backgroundColor: '#f8f9fa' }}>
-                <MDBBtn outline color="dark" style={{ height: '36px', overflow: 'visible' }} onClick={isEditing ? handleSaveProfile : toggleEditing}>
+              <div className="p-4 text-black" style={{ backgroundColor: '#f8f9fa', fontFamily:'Georgina', }}>
+                <MDBBtn outline color="dark" style={{ height: '36px', overflow: 'visible' }} onClick={isEditing ? handleSaveProfile : toggleEditing}><img
+                        src="edit.jpg"
+                        alt="Edit"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />
                   {isEditing ? 'Save Changes' : 'Edit Profile'}
                 </MDBBtn>
               </div>
-              <MDBCardBody className="text-black p-4">
+              <MDBCardBody className="text-black p-4" style={{fontFamily:'Georgina',}}>
                 <div className="mb-5">
                   {isEditing ? (
                     <div className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
-                      <input type="text" placeholder="Company" />
-                      <input type="text" placeholder="Location" />
-                      <input type="text" placeholder="Contatc Number" />
+                      <h4>Company's Information</h4>
+                      <input type="text" placeholder="Name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} style={{ marginRight:'5px', marginBottom:'5px'}}/>
+                      <input type="text" placeholder="Location" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} style={{ marginRight:'5px'}}/>
+                      <input type="text" placeholder="Contact Number" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} style={{ marginRight:'5px'}}/>
+                      <input type="text" placeholder="Email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)}/>
                     </div>
                   ) : (
-                    <div className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
-                    <MDBCardText className="font-italic mb-1" style={{textAlign:'center', fontWeight:'bold'}}>AGENT INFORMATION</MDBCardText>
-                      <MDBCardText className="font-italic mb-1">{name}</MDBCardText>
-                      <MDBCardText className="font-italic mb-1">{location}</MDBCardText>
-                      <MDBCardText className="font-italic mb-1">{email}</MDBCardText>
-                      <MDBCardText className="font-italic mb-0">{contactNumber}</MDBCardText>
+                    <div className="p-4" style={{ backgroundColor: '#f8f9fa', fontFamily:'Georgina' }}>
+                    <MDBCardText className="font-italic mb-1" style={{textAlign:'center', fontWeight:'bold'}}>AGENT'S INFORMATION</MDBCardText>
+                      <MDBCardText className="font-italic mb-1">
+                      <img
+                        src="opname.jpg"
+                        alt="Operator User Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />{name}</MDBCardText>
+                      <MDBCardText className="font-italic mb-1"> <img
+                        src="opa.png"
+                        alt="Operator Address Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />
+                        {location}</MDBCardText>
+                      <MDBCardText className="font-italic mb-1"> <img
+                        src="ope.jpg"
+                        alt="Operator Email Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />
+                        {email}</MDBCardText>
+                      <MDBCardText className="font-italic mb-0"> <img
+                        src="opcontact.png"
+                        alt="Operator Contact Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />{contactNumber}</MDBCardText>
                     </div>
                   )}
                 </div>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <MDBCardText className="lead fw-normal mb-0">More</MDBCardText>
-                  <MDBCardText className="mb-0"><a href="#!" className="text-muted">Show all</a></MDBCardText>
-                </div>
-                <MDBRow>
-                  <MDBCol className="mb-2">
-                    <MDBCardImage src="https://static-ph.lamudi.com/static/media/bm9uZS9ub25l/2x2x2x380x244/7e83cd57260dee.jpg"
-                      alt="image 1" className="w-100 rounded-3" />
-                  </MDBCol>
-                  <MDBCol className="mb-2">
-                    <MDBCardImage src="https://static-ph.lamudi.com/static/media/bm9uZS9ub25l/2x2x5x880x396/54e6e09d3e6e1a.jpg"
-                      alt="image 1" className="w-100 rounded-3" />
-                  </MDBCol>
-                </MDBRow>
-                <MDBRow className="g-2">
-                  <MDBCol className="mb-2">
-                    <MDBCardImage src="https://parada.ph/storage/images/spot-image/329/Screenshot_20190826_135314.jpg"
-                      alt="image 1" className="w-100 rounded-3" />
-                  </MDBCol>
-                  <MDBCol className="mb-2">
-                    <MDBCardImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_pn4I4ZoKpjQEPxu-qmz_Db7y-jZrbNLFdAWdsG3-GUcCw-XW9SESLsm-VkkNBLy7KFI&usqp=CAU"
-                      alt="image 1" className="w-100 rounded-3" />
-                  </MDBCol>
-                </MDBRow>
+                <div className="p-4" style={{ backgroundColor: '#f8f9fa', fontFamily:'Georgina' }}>
+                    <MDBCardText className="font-italic mb-1" style={{textAlign:'center', fontWeight:'bold'}}>CURRENTLY WORKS AT</MDBCardText>
+                      <MDBCardText className="font-italic mb-1">
+                      <img
+                        src="esLogo.png"
+                        alt="Operator User Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />{companyName}</MDBCardText>
+                      <MDBCardText className="font-italic mb-1"> <img
+                        src="esA.png"
+                        alt="Operator Address Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />
+                        {companyAddress}</MDBCardText>
+                      <MDBCardText className="font-italic mb-1"> <img
+                        src="ope.jpg"
+                        alt="Operator Email Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />
+                        {companyEmail}</MDBCardText>
+                      <MDBCardText className="font-italic mb-0"> <img
+                        src="opcontact.png"
+                        alt="Operator Contact Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />{companyContact}</MDBCardText>
+                    </div>
               </MDBCardBody>
             </MDBCard>
           </MDBCol>

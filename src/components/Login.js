@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { db } from '../config/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -9,6 +12,19 @@ function Login() {
   const [establishmentData, setEstablishmentData] = useState(null); 
   const navigate = useNavigate();
   const [userType, setUserType] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };  
+  const passwordToggleStyle = {
+    position: 'absolute',
+    right: '10px',
+    top: '40%',
+    transform: 'translateY(-50%)',
+    cursor: 'pointer',
+    userSelect: 'none',
+  };
 
   const handleCreate = () => {
     navigate("/Create");
@@ -20,7 +36,7 @@ function Login() {
       let collectionName = '';
 
       if (userType === 'agents') {
-        collectionName = 'agents'; // Update with your agents collection name
+        collectionName = 'agents';
       } else if (userType === 'establishment') {
         collectionName = 'establishments';
       } else {
@@ -35,12 +51,9 @@ function Login() {
 
       if (user && user.data().password === password) {
         alert('Login successful!');
-        // Navigate based on userType
         if (userType === 'agents') {
-          // Navigate to agent dashboard
           navigate('/OperatorDashboard', { state: user.data() });
         } else {
-          // Navigate to establishment dashboard
           navigate('/Dashboard', { state: user.data() });
         }
       } else {
@@ -56,7 +69,6 @@ function Login() {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
     minHeight: '100vh',
     backgroundColor: 'white',
   };
@@ -67,9 +79,11 @@ function Login() {
     border: '1px solid #ccc',
     borderRadius: '5px',
     fontSize: '16px',
+    fontFamily: 'Georgina'
   };
   const formContainerStyle = {
     backgroundColor: 'white',
+    marginTop:'100px',
     padding: '30px',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
@@ -84,6 +98,7 @@ function Login() {
     border: '1px solid #ccc',
     borderRadius: '5px',
     fontSize: '16px',
+    fontFamily:'Georgina'
   };
 
   const buttonStyle = {
@@ -107,22 +122,34 @@ function Login() {
     cursor: 'pointer',
     fontSize: '18px',
   };
+  const navbarStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '15px',
+    backgroundColor: 'black',
+    color: 'white',
+    width: '100%',
+  };
+
+  const logoStyle = {
+    fontSize: '24px',
+    fontWeight: 'bold',
+  };
 
 
   return (
     <div style={containerStyle}>
+        <div style={navbarStyle}>
+        <div style={logoStyle}>SpotWise Parking Management</div>
+      </div>
       <div style={formContainerStyle}>
-        <img
-          src="parking.png"
-          alt="SpotWise Parking Management Logo"
-          style={{ width: '200px', marginBottom: '20px', objectFit: 'cover' }}
-        />
          <select
           value={userType}
           onChange={(e) => setUserType(e.target.value)}
           style={selectStyle}
         >
-          <option value="">Please select type of account</option>
+          <option value="" >Please select type of account</option>
           <option value="agents">Agent</option>
           <option value="establishment">Establishment</option>
         </select>
@@ -137,23 +164,41 @@ function Login() {
               style={inputStyle}
             />
           </div>
-          <div>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={inputStyle}
-            />
-          </div>
-          <button type="submit" style={buttonStyle}>
+          <div style={{ position: 'relative' }}>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={inputStyle}
+
+          />
+          {password.length > 0 && ( 
+            <span style={passwordToggleStyle} onClick={togglePasswordVisibility}>
+              {showPassword ? (
+                <FontAwesomeIcon icon={faEyeSlash} />
+              ) : (
+                <FontAwesomeIcon icon={faEye} />
+              )}
+            </span>
+          )}
+        </div>
+          <button type="submit" style={buttonStyle}><img
+                        src="login.png"
+                        alt="Log in Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />
             Log In
           </button>
           <p style={{ marginTop: '10px', fontSize: '14px' }}>
            <a href="/forget">Forget Password?</a>
           </p>
-          <button type="submit" style={buttonStyle2} onClick={handleCreate}>
+          <button type="submit" style={buttonStyle2} onClick={handleCreate}><img
+                        src="create1.png"
+                        alt="Create Account Logo"
+                        style={{width: '20px', marginRight: '10px'}}
+                      />
             Create Account
           </button>
         </form>

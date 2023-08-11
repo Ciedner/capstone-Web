@@ -64,25 +64,53 @@ const Tracks = () => {
 
   return (
     <div style={{ backgroundColor: '#3b89ac', minHeight: "100vh" }}>
-      <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
-          <div className="container">
-            <Link className="navbar-brand" to="/estDashBoard">
-              SpotWise Parking Management System
-            </Link>
-            <p style={styles.welcomeMessage}>
-            <DropdownButton
-              alignRight
-              variant="outline-light"
-              title={<FaUserCircle style={styles.icon} />}
-              id="dropdown-menu"
-            >
-              <Dropdown.Item href="Dashboard">Dashboard</Dropdown.Item>
+     <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'20px' }}>
+        <div className="container">
+          <Link className="navbar-brand" to="/Dashboard">
+            SpotWise Parking Management System
+          </Link>
+          <p style={styles.welcomeMessage}>
+          <DropdownButton 
+                alignRight
+                variant="outline-light"
+                title={<FaUserCircle style={styles.icon} />}
+                id="dropdown-menu"
+              > 
+              <Dropdown.Item href="Dashboard"><img
+                        src="dashboard.jpg"
+                        alt="Operator Dashboard Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
+              <Dropdown.Item href="AgentSchedule"><img
+                        src="calendar.webp"
+                        alt="Agent Schedule"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Agent Schedule </Dropdown.Item> 
+              <Dropdown.Item href="AgentRegistration"><img
+                        src="registerA.jpg"
+                        alt="Agent Register"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Register Ticket Operator</Dropdown.Item>   
+              <Dropdown.Item href="OperatorDashboard"><img
+                        src="infoPark.png"
+                        alt="Parking Info"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Ticket Information</Dropdown.Item> 
+              <Dropdown.Item href="Feedback"><img
+                        src="feedback.jpg"
+                        alt="Feedback"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Feedback</Dropdown.Item>    
               <Dropdown.Divider />
-              <Dropdown.Item href="/Login">Logout</Dropdown.Item>
-            </DropdownButton>
+                <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
+              </DropdownButton>
           </p>
-          </div>
-        </nav>
+        </div>
+      </nav>
       <Container style={{backgroundColor:'#bfd2d9', marginTop:'80px', borderRadius:'25px'}}>
         <Row>
           <Col md={5} style={{marginTop:'20px'}}>
@@ -154,38 +182,72 @@ const Tracks = () => {
             <Container style={{marginLeft:'75px',backgroundColor: '#fff', padding: '20px', marginTop: '20px', height: '700px', borderRadius:'20px'}}>
               {showTable ? (
                 <>
-                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center' }}>INCOME DETAIL</h3>
-                  <Table responsive>
+                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center', marginBottom:'15px' }}>INCOME DETAIL</h3>
+                  <Table responsive style={{fontFamily:'Georgina'}}>
                     <thead>
                       <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>Amount</th>
+                        <th><img
+                        src="num.png"
+                        alt="ID Number"
+                        style={{ width: '30px', marginRight: '20px'}}
+                      /></th>
+                        <th><img
+                        src="date.jpg"
+                        alt="Calendar"
+                        style={{ width: '30px', marginRight: '20px', marginLeft:'20px'}}
+                      /></th>
+                        <th><img
+                        src="coins.png"
+                        alt="Amount"
+                        style={{ width: '30px', marginLeft:'20px'}}
+                      /></th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td>1</td>
                         <td>2023-07-01</td>
-                        <td>$500</td>
+                        <td>PHP 500</td>
                       </tr>
                       <tr>
                         <td>2</td>
                         <td>2023-07-02</td>
-                        <td>$750</td>
+                        <td>PHP 750</td>
                       </tr>
                     </tbody>
                   </Table>
                 </>
               ) : showUserDetail ? (
                 <>
-                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center' }}>USER DETAIL</h3>
-                  <Table responsive>
+                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center', marginBottom:'15px' }}>CUSTOMER DETAIL</h3>
+                  <Table responsive style={{fontFamily:'Georgina'}}>
                     <thead>
                       <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
+                        <th><img
+                        src="num.png"
+                        alt="ID Number"
+                        style={{ width: '30px', marginRight: '20px'}}
+                      /></th>
+                        <th><img
+                        src="opname.jpg"
+                        alt="Name"
+                        style={{ width: '30px', marginRight: '10px', marginLeft:'40px'}}
+                      /></th>
+                        <th><img
+                        src="ope.jpg"
+                        alt="Email"
+                        style={{ width: '30px', marginRight: '10px', marginLeft:'40px'}}
+                      /></th>
+                        <th><img
+                        src="timein.png"
+                        alt="Time in"
+                        style={{ width: '30px', marginRight: '10px', marginLeft:'20px'}}
+                      /></th>
+                        <th><img
+                        src="timout.png"
+                        alt="Time in"
+                        style={{ width: '30px', marginRight: '10px', marginLeft:'20px'}}
+                      /></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -193,27 +255,55 @@ const Tracks = () => {
                         <td>1</td>
                         <td>Junas Nazarito Gutib</td>
                         <td>wakwak@gmail.com</td>
+                        <td>08:48 AM</td>
+                        <td>03:25 PM</td>
                       </tr>
                       <tr>
                         <td>2</td>
                         <td>Gilbert Canete</td>
                         <td>gilbertcanete@gmail.com</td>
+                        <td>10:05 AM</td>
+                        <td>02:28 PM</td>
                       </tr>
                     </tbody>
                   </Table>
                 </>
              ) : showSchedule ? (
                 <>
-                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center' }}>SCHEDULE DETAIL</h3>
-                  <Table responsive>
+                  <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center', marginBottom:'20px'}}>SCHEDULE DETAIL</h3>
+                  <Table responsive style={{fontFamily:'Georgina'}}>
                     <thead>
                       <tr>
-                        <th>Agent Name</th>
-                        <th>Time in</th>
-                        <th>Time out</th>
-                        <th>Duty Hours</th>
-                        <th>Email</th>
-                        <th>Contact</th>
+                        <th><img
+                        src="agent.jpg"
+                        alt="Agent Name"
+                        style={{ width: '30px', marginRight: '20px', marginLeft:'20px'}}
+                      /></th>
+                        <th><img
+                        src="timein.png"
+                        alt="Time in"
+                        style={{ width: '30px', marginRight: '20px', marginLeft:'20px'}}
+                      /></th>
+                        <th><img
+                        src="timout.png"
+                        alt="Time out"
+                        style={{ width: '30px', marginRight: '20px', marginLeft:'20px'}}
+                      /></th>
+                        <th><img
+                        src="dutyH.jpg"
+                        alt="Duty Hours"
+                        style={{ width: '30px', marginRight: '20px', marginLeft:'20px'}}
+                      /></th>
+                        <th><img
+                        src="ope.jpg"
+                        alt="Email"
+                        style={{ width: '30px', marginRight: '20px', marginLeft:'60px'}}
+                      /></th>
+                        <th><img
+                        src="opcontact.png"
+                        alt="Contact Number"
+                        style={{ width: '30px', marginLeft:'20px'}}
+                      /></th>
                       </tr>
                     </thead>
                     <tbody>

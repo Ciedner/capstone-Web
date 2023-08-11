@@ -1,6 +1,6 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.css';
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { DropdownButton, Dropdown, Button } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
@@ -40,6 +40,9 @@ const Establishment = () => {
 
   const handleButtonClick = () => {
     navigate("/OperatorDashboard");
+  };
+  const handleAgentSchedule = () => {
+    navigate("/AgentSchedule");
   };
 
   const handleRevenues = () => {
@@ -86,9 +89,11 @@ const Establishment = () => {
                 title={<FaUserCircle style={styles.icon} />}
                 id="dropdown-menu"
               >
-                <Dropdown.Item href="/AgentSchedule">Agent Schedule</Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item href="/">Logout</Dropdown.Item>
+                <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
               </DropdownButton>
           </p>
         </div>
@@ -98,20 +103,21 @@ const Establishment = () => {
           <MDBCol lg="4">
           <MDBCard className="mb-4" style={{marginTop: '45px'}}>
               <MDBCardBody className="text-center" style={{backgroundColor:"#bfd2d9"}}>
-                <p style={{fontFamily:"Courier New"}}>Administrator</p>
+                <p style={{fontFamily:"Georgina"}}>Administrator</p>
                 <MDBCardImage
-                  src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                  alt="avatar"
+                  src="agent.jpg"
+                  alt="Operator Profile Logo"
                   className="rounded-circle"
                   style={{ width: '70px', backgroundColor:"#003851"}}
                   fluid
                 />
-               <p className="text-muted mb-1" style={{ fontFamily: 'Courier New', marginTop: '15px' }}>
+               <p className="text-muted mb-1" style={{ fontFamily: 'Georgina', marginTop: '15px' }}>
                   {establishmentData && establishmentData.managementName}
                 </p>
-                <p className="text-muted mb-4" style={{ fontFamily: 'Courier New' }}>
+                <p className="text-muted mb-4" style={{ fontFamily: 'Georgina' }}>
                   {establishmentData && establishmentData.address}
                 </p>
+                <Button onClick={handleProfile} style={{fontFamily:'Georgina'}}>View Profile</Button>
               </MDBCardBody>
             </MDBCard>
 
@@ -124,8 +130,13 @@ const Establishment = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
-                    <FontAwesomeIcon icon={faAddressCard} />
-                    <MDBCardText onClick={() => handleProfile()}>Profile</MDBCardText>
+                     <MDBCardText onClick={() => handleAgentSchedule()} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+                    <img
+                        src="calendar.webp"
+                        alt="Calendar"
+                        style={{ width: '40px', marginRight: '30px'}}
+                      /> 
+                    Agent Schedule</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem style={listItemStyle}
                     hover
@@ -133,8 +144,13 @@ const Establishment = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
-                    <FontAwesomeIcon icon={faPlus} />
-                    <MDBCardText onClick={() => handleRegister()}>Register Ticket Operator</MDBCardText>
+                     <MDBCardText onClick={() => handleRegister()} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+                    <img
+                        src="registerA.jpg"
+                        alt="User"
+                        style={{ width: '40px', marginRight: '30px'}}
+                      /> 
+                   Register Ticket Operator</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem  style={listItemStyle}
                     hover
@@ -142,8 +158,13 @@ const Establishment = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
-                  <FontAwesomeIcon icon={faEye} />
-                    <MDBCardText onClick={() => handleButtonClick()}>Ticketing Information</MDBCardText>
+                  <MDBCardText onClick={() => handleButtonClick()} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+                   <img
+                        src="infoPark.png"
+                        alt="User"
+                        style={{ width: '40px', marginRight: '30px'}}
+                      /> 
+                   Ticketing Information</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem style={listItemStyle}
                     hover
@@ -151,8 +172,13 @@ const Establishment = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
-                    <FontAwesomeIcon icon={faChartColumn} />
-                    <MDBCardText onClick={() => handleRevenues()}>Management Details</MDBCardText>
+                    <MDBCardText onClick={() => handleRevenues()} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+                        <img
+                        src="management.jpg"
+                        alt="Management"
+                        style={{ width: '40px', marginRight: '30px'}}
+                      /> 
+                  Management Details</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem style={listItemStyle}
                     hover
@@ -160,8 +186,13 @@ const Establishment = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
                   >
-                    <FontAwesomeIcon icon={faUser} />
-                    <MDBCardText onClick={() => handleFeed()}>Feedback</MDBCardText>
+                    <MDBCardText onClick={() => handleFeed()} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+                    <img
+                        src="feedback.jpg"
+                        alt="Feedback"
+                        style={{ width: '40px', marginRight: '30px'}}
+                      /> 
+                    Feedback</MDBCardText>
                   </MDBListGroupItem>
                 </MDBListGroup>
               </MDBCardBody>

@@ -124,25 +124,53 @@ const FeedbackPage = () => {
 
   return (
     <div>
-    <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom: '20px' }}>
-    <div className="container">
-      <Link className="navbar-brand" to="/Dashboard">
-        SpotWise Parking Management System
-      </Link>
-      <p style={styles.welcomeMessage}>
-      <DropdownButton 
-            alignRight
-            variant="outline-light"
-            title={<FaUserCircle style={styles.icon} />}
-            id="dropdown-menu"
-          >
-            <Dropdown.Item href="/Dashboard">Dashboard</Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item href="/">Logout</Dropdown.Item>
-          </DropdownButton>
-      </p>
-    </div>
-  </nav>
+    <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851", marginBottom:'20px' }}>
+        <div className="container">
+          <Link className="navbar-brand" to="/Dashboard">
+            SpotWise Parking Management System
+          </Link>
+          <p style={styles.welcomeMessage}>
+          <DropdownButton 
+                alignRight
+                variant="outline-light"
+                title={<FaUserCircle style={styles.icon} />}
+                id="dropdown-menu"
+              > 
+              <Dropdown.Item href="Dashboard"><img
+                        src="dashboard.jpg"
+                        alt="Operator Dashboard Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
+              <Dropdown.Item href="AgentSchedule"><img
+                        src="calendar.webp"
+                        alt="Agent Schedule"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Agent Schedule </Dropdown.Item> 
+              <Dropdown.Item href="AgentRegistration"><img
+                        src="registerA.jpg"
+                        alt="Agent Register"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Register Ticket Operator</Dropdown.Item> 
+              <Dropdown.Item href="OperatorDashboard"><img
+                        src="infoPark.png"
+                        alt="Parking Info"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Ticket Information</Dropdown.Item> 
+              <Dropdown.Item href="Tracks"><img
+                        src="management.jpg"
+                        alt="Management Details"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Management Details</Dropdown.Item>    
+              <Dropdown.Divider />
+                <Dropdown.Item href="/"><img
+                        src="logout.png"
+                        alt="Operator Logout Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Logout</Dropdown.Item>
+              </DropdownButton>
+          </p>
+        </div>
+      </nav>
     <div style={styles.mainContainer}>
       <h1 style={{ textAlign: 'center', fontFamily: 'Georgina', fontSize: '32px' }}>
         Customer Feedback
@@ -199,7 +227,7 @@ const FeedbackPage = () => {
               </div>
             </div>
           ) : (
-            <p>Select a feedback entry to view details.</p>
+            <p style={{fontFamily:'Georgina', textAlign:'center'}}>Select a feedback entry to view details.</p>
           )}
         </div>
       </div>
