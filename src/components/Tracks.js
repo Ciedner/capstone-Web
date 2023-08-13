@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { DropdownButton, Dropdown, Spinner } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
 import { Card, Row, Col, Container, Table } from "react-bootstrap";
 import {
@@ -11,12 +11,17 @@ import {
   MDBBtn,
   MDBCardTitle
 } from 'mdb-react-ui-kit';
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
+import {db} from "../config/firebase"
+import { collection , onSnapshot } from "firebase/firestore";
 
 const Tracks = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showTable, setShowTable] = useState(false);
   const [showUserDetail, setShowUserDetail] = useState(false);
+  const [data, setData] = useState([]);
+  
+  const [loading, setLoading] = useState(true);
   
   const [showSchedule, setShowSchedule] = useState(false);
 
@@ -61,6 +66,20 @@ const Tracks = () => {
       marginRight: "5px",
     },
   };
+
+  useEffect(() => {
+    const parkingLogsRef = collection(db, 'parkingLogs');
+
+    const unsubscribe = onSnapshot(parkingLogsRef, (snapshot) => {
+      const newData = snapshot.docs.map((doc) => doc.data());
+      setData(newData);
+      setLoading(false); 
+    });
+
+    return () => {
+      unsubscribe(); 
+    };
+  }, []);
 
   return (
     <div style={{ backgroundColor: '#3b89ac', minHeight: "100vh" }}>
@@ -179,7 +198,7 @@ const Tracks = () => {
             </Container>
           </Col>
           <Col md={6}>
-            <Container style={{marginLeft:'75px',backgroundColor: '#fff', padding: '20px', marginTop: '20px', height: '700px', borderRadius:'20px'}}>
+            <Container style={{marginLeft:'75px',backgroundColor: '#fff', padding: '10px', marginTop: '20px', height: '700px', borderRadius:'20px'}}>
               {showTable ? (
                 <>
                   <h3 style={{ fontFamily: 'Courier New', fontWeight: 'bold', textAlign: 'center', marginBottom:'15px' }}>INCOME DETAIL</h3>
@@ -223,21 +242,17 @@ const Tracks = () => {
                   <Table responsive style={{fontFamily:'Georgina'}}>
                     <thead>
                       <tr>
-                        <th><img
-                        src="num.png"
-                        alt="ID Number"
-                        style={{ width: '30px', marginRight: '20px'}}
-                      /></th>
+                        <th>ID</th>
                         <th><img
                         src="opname.jpg"
                         alt="Name"
                         style={{ width: '30px', marginRight: '10px', marginLeft:'40px'}}
-                      /></th>
+                      />Customer Name</th>
                         <th><img
                         src="ope.jpg"
                         alt="Email"
                         style={{ width: '30px', marginRight: '10px', marginLeft:'40px'}}
-                      /></th>
+                      />Customer Email </th>
                         <th><img
                         src="timein.png"
                         alt="Time in"
@@ -251,21 +266,17 @@ const Tracks = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>1</td>
-                        <td>Junas Nazarito Gutib</td>
-                        <td>wakwak@gmail.com</td>
-                        <td>08:48 AM</td>
-                        <td>03:25 PM</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>Gilbert Canete</td>
-                        <td>gilbertcanete@gmail.com</td>
-                        <td>10:05 AM</td>
-                        <td>02:28 PM</td>
-                      </tr>
-                    </tbody>
+              {data.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.id}</td>
+                  <td>{row.name}</td>
+                  <td>{row.vehicle}</td>
+                  <td>{row.plateNo}</td>
+                  <td>{row.timeIn}</td>
+                  <td>{row.timeOut}</td>
+                </tr>
+              ))}
+            </tbody>
                   </Table>
                 </>
              ) : showSchedule ? (

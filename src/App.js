@@ -1,7 +1,6 @@
 import Login from "./components/Login";
 import Create from "./components/Create"
 import Dashboard from "./components/Dashboard"
-import Ticketing from "./components/Ticketing"
 import OperatorDashboard from "./Operator/OperatorDashboard";
 import ViewSpace from "./Operator/ViewSpace"
 import AgentRegistration from "./components/AgentRegistration"
@@ -12,6 +11,7 @@ import ForgetPassword from "./components/ForgetPassword"
 import OperatorProfile from "./Operator/OperatorProfile"
 import AgentSchedule from "./components/AgentSchedule"
 import TicketInfo from "./components/TicketInfo"
+import Test from "./components/Test"
 
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -23,7 +23,6 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="Create" element={<Create />} />
           <Route path="Dashboard" element={<Dashboard />} />
-          <Route path="Ticketing" element={<Ticketing />} />
           <Route path="OperatorDashboard" element={<OperatorDashboard />} />
           <Route path="ViewSpace" element={<ViewSpace/>} />
           <Route path="AgentRegistration" element={<AgentRegistration/>} />
@@ -34,6 +33,7 @@ function App() {
           <Route path="OperatorProfile" element={<OperatorProfile/>} />
           <Route path="AgentSchedule" element={<AgentSchedule/>} />
           <Route path="TicketInfo" element={<TicketInfo/>} />
+          <Route path="Test" element={<Test/>} />
         </Routes>
       </Router>
     </div>

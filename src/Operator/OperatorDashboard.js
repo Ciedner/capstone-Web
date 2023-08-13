@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FaUserCircle } from "react-icons/fa";
 import { faCar, faCoins, faUser, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import {db} from "../config/firebase"
-import { collection, getDocs, addDoc, updateDoc,  doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc,  doc, Timestamp } from 'firebase/firestore';
 
 function OperatorDashboard() {
   const [data, setData] = useState([]);
@@ -67,22 +67,22 @@ function OperatorDashboard() {
 
   const handleInVehicleClick = async () => {
     if (foundUser) {
-      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
+      const currentTime = new Date();
+      const formattedTime = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const formattedDate = currentTime.toLocaleDateString();
       const newRow = {
         id: idCounter,
         name: foundUser.name,
         vehicle: foundUser.car,
         plateNo: foundUser.carPlateNumber,
-        timeIn: currentTime,
+        timeIn: `${formattedDate} ${formattedTime}`,
         timeOut: '---',
         paymentStatus: 'Pending',
         paymentStatusColor: 'red',
       };
   
       try {
-        // Add the user's data to the parkingLogs collection with a generated document ID
-        const parkingLogsRef = collection(db, 'parkingLogs'); // Replace with your collection name
+        const parkingLogsRef = collection(db, 'parkingLogs'); 
         const newDocRef = await addDoc(parkingLogsRef, newRow);
         console.log('User added to parkingLogs collection with ID:', newDocRef.id);
       } catch (error) {
@@ -99,17 +99,18 @@ function OperatorDashboard() {
 
   const handleOutVehicleClick = async () => {
     if (foundUser) {
-      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const currentTime = new Date();
+      const formattedTime = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const formattedDate = currentTime.toLocaleDateString(); 
   
       const newRow = {
-        timeOut: currentTime,
+        timeOut: `${formattedDate} ${formattedTime}`,
         paymentStatus: 'Paid',
         paymentStatusColor: 'green',
       };
   
       try {
-        // Update the user's data in the parkingLogs collection using the document ID
-        const parkingLogsRef = collection(db, 'parkingLogs'); // Replace with your collection name
+        const parkingLogsRef = collection(db, 'parkingLogs'); 
         const querySnapshot = await getDocs(parkingLogsRef);
         const parkingLog = querySnapshot.docs.find((doc) => doc.data().name === foundUser.name);
   
