@@ -9,6 +9,8 @@ import Form from "react-bootstrap/Form";
 import { useNavigate, Link } from "react-router-dom";
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { db } from '../config/firebase'; 
 
 function Calendar() {
   const [showModal, setShowModal] = useState(false);
@@ -20,6 +22,9 @@ function Calendar() {
   const [eventEmail, setEventEmail] = useState("");
   const [eventAgentName, setEventAgentName] = useState("");
   const [events, setEvents] = useState([]);
+  const [eventTimeIn, setEventTimeIn] = useState("00:00");
+const [eventTimeOut, setEventTimeOut] = useState("00:00");
+
   const navigate = useNavigate();
 
   const styles = {
@@ -47,7 +52,10 @@ function Calendar() {
   };
   const handleModalOpen = () => {
     setShowModal(true);
+    setEventTimeIn("00:00");
+    setEventTimeOut("00:00");
   };
+  
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -78,15 +86,15 @@ function Calendar() {
     }
 
     if (isValid) {
-      const CST_OFFSET = 8 * 60; 
-      const PST_OFFSET = 8 * 60; 
+      const CST_OFFSET = 8 * 60;
+      const PST_OFFSET = 8 * 60;
 
       const startDateTime = new Date(
-        `${eventStartDate.toISOString().split("T")[0]}T${eventStartTime}`
+        `${eventStartDate.toISOString().split('T')[0]}T${eventStartTime}`
       );
 
       const endDateTime = new Date(
-        `${eventEndDate.toISOString().split("T")[0]}T${eventEndTime}`
+        `${eventEndDate.toISOString().split('T')[0]}T${eventEndTime}`
       );
       const startTimestamp = startDateTime.getTime() + CST_OFFSET * 60000;
       const endTimestamp = endDateTime.getTime() + CST_OFFSET * 60000;
@@ -99,24 +107,37 @@ function Calendar() {
         end: endDateTime,
         email: eventEmail,
         name: eventAgentName,
+        timeIn: eventTimeIn,
+        timeOut: eventTimeOut,
       };
-      if (emailColorMap[eventEmail]) {
-        newEvent.backgroundColor = emailColorMap[eventEmail];
-      } else {
-        newEvent.backgroundColor = "gray"; 
-      }
-      setEvents([...events, newEvent]);
-      setEventTitle("");
-      setEventStartDate(new Date());
-      setEventStartTime("00:00");
-      setEventEndDate(new Date());
-      setEventEndTime("00:00");
-      setEventEmail("");
-      setEventAgentName("");
-      setShowModal(false);
+
+      const firestore = getFirestore();
+
+      addDoc(collection(firestore, 'schedule'), newEvent)
+        .then((docRef) => {
+          console.log('Event added with ID: ', docRef.id);
+          
+          setEvents([...events, newEvent]);
+  
+          setEventTitle('');
+          setEventStartDate(new Date());
+          setEventStartTime('00:00');
+          setEventEndDate(new Date());
+          setEventEndTime('00:00');
+          setEventEmail('');
+          setEventAgentName('');
+          setEventTimeIn('00:00');
+          setEventTimeOut('00:00');
+  
+          // Close the modal
+          setShowModal(false);
+        })
+        .catch((error) => {
+          console.error('Error adding event: ', error);
+        });
     }
   };
-
+  
   const handleEventClick = (info) => {
     const clickedEvent = info.event;
 
@@ -165,7 +186,7 @@ function Calendar() {
                         alt="Agent Register"
                         style={{ width: '20px', marginRight: '10px'}}
                       />Register Ticket Operator</Dropdown.Item> 
-              <Dropdown.Item href="OperatorDashboard"><img
+              <Dropdown.Item href="TicketInfo"><img
                         src="infoPark.png"
                         alt="Parking Info"
                         style={{ width: '20px', marginRight: '10px'}}
@@ -253,6 +274,22 @@ function Calendar() {
               />
               {!isEndDateValid && <Form.Control.Feedback type="invalid">Please select a valid end date.</Form.Control.Feedback>}
             </Form.Group>
+            <Form.Group controlId="eventTimeIn">
+  <Form.Label>Time In</Form.Label>
+  <Form.Control
+    type="time"
+    value={eventTimeIn}
+    onChange={(e) => setEventTimeIn(e.target.value)}
+  />
+</Form.Group>
+<Form.Group controlId="eventTimeOut">
+  <Form.Label>Time Out</Form.Label>
+  <Form.Control
+    type="time"
+    value={eventTimeOut}
+    onChange={(e) => setEventTimeOut(e.target.value)}
+  />
+</Form.Group>
             <Form.Group controlId="eventEmail">
               <Form.Label>Email</Form.Label>
               <Form.Control

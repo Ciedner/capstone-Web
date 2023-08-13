@@ -48,7 +48,7 @@ function Create() {
       setContact('');
       setParkingPayment('');
       alert('Successfully registered!');
-      navigate.navigate()
+      navigate("/");
     } catch (error) {
       console.error('Error creating account:', error);
     }

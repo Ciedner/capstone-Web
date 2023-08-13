@@ -78,7 +78,7 @@ export default function EditButton() {
                         alt="Agent Register"
                         style={{ width: '20px', marginRight: '10px'}}
                       />Register Ticket Operator</Dropdown.Item> 
-              <Dropdown.Item href="OperatorDashboard"><img
+              <Dropdown.Item href="TicketInfo"><img
                         src="infoPark.png"
                         alt="Parking Info"
                         style={{ width: '20px', marginRight: '10px'}}
