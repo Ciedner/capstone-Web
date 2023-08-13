@@ -9,13 +9,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FaUserCircle } from "react-icons/fa";
 import { faCar, faCoins, faUser, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import {db} from "../config/firebase"
+import { collection, getDocs, addDoc, updateDoc,  doc } from 'firebase/firestore';
 
 function OperatorDashboard() {
   const [data, setData] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [foundUser, setFoundUser] = useState(null);
   const [idCounter, setIdCounter] = useState(1);
-  const [userOccupy, setOccupants] = useState(250);
+  const [userOccupy, setOccupants] = useState(60);
   const [totalUsers, setTotalUsers] = useState(0);
     const [fixedPrice, setFixedPrice] = useState(30);
     const [totalRevenues, setTotalRevenues] = useState(0);
@@ -38,24 +39,6 @@ function OperatorDashboard() {
     },
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/parking');
-        if (response.ok) {
-          const parkingData = await response.json();
-          setData(parkingData);
-          setTotalUsers(location.state.totalUsers || 0);
-        } else {
-          console.error('Failed to fetch parking data');
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const handleSearchInputChange = (event) => {
     setSearchInput(event.target.value);
@@ -64,15 +47,16 @@ function OperatorDashboard() {
   const handleSearchSubmit = async (event) => {
     event.preventDefault();
     try {
-      const usersRef = db.collection('user');
-      const query = usersRef.where('email', '==', searchInput);
-      const querySnapshot = await query.get();
+      const collectionRef = collection(db, 'user'); 
+      const querySnapshot = await getDocs(collectionRef);
+      
+      const user = querySnapshot.docs.find(doc => doc.data().email === searchInput);
   
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        const user = userDoc.data();
-        setFoundUser(user);
+      if (user) {
+        console.log('Found user:', user.data());
+        setFoundUser(user.data());
       } else {
+        console.log('User not found.');
         setFoundUser(null);
       }
     } catch (error) {
@@ -80,40 +64,66 @@ function OperatorDashboard() {
       setFoundUser(null);
     }
   };
-  
 
-  const handleInVehicleClick = () => {
+  const handleInVehicleClick = async () => {
     if (foundUser) {
       const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
       const newRow = {
         id: idCounter,
-        name: `${foundUser.fName} ${foundUser.lName}`,
-        vehicle: foundUser.vehicle,
-        plateNo: foundUser.plate,
+        name: foundUser.name,
+        vehicle: foundUser.car,
+        plateNo: foundUser.carPlateNumber,
         timeIn: currentTime,
         timeOut: '---',
         paymentStatus: 'Pending',
         paymentStatusColor: 'red',
       };
+  
+      try {
+        // Add the user's data to the parkingLogs collection with a generated document ID
+        const parkingLogsRef = collection(db, 'parkingLogs'); // Replace with your collection name
+        const newDocRef = await addDoc(parkingLogsRef, newRow);
+        console.log('User added to parkingLogs collection with ID:', newDocRef.id);
+      } catch (error) {
+        console.error('Error adding document: ', error);
+      }
+  
       setData((prevData) => [...prevData, newRow]);
       setIdCounter((prevCounter) => prevCounter + 1);
-      setOccupants((prevTotal) => prevTotal - 1); 
+      setOccupants((prevTotal) => prevTotal - 1);
       setTotalUsers((prevTotal) => prevTotal + 1);
-      navigate("/operator", { state: { user: foundUser } })
+      navigate('/OperatorDashboard', { state: { user: foundUser } });
     }
   };
 
-  const handleOutVehicleClick = () => {
-    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const newRow = {
-      timeOut: currentTime,
-      paymentStatus: 'Paid',
-      paymentStatusColor: 'green',
-    };
+  const handleOutVehicleClick = async () => {
     if (foundUser) {
+      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+      const newRow = {
+        timeOut: currentTime,
+        paymentStatus: 'Paid',
+        paymentStatusColor: 'green',
+      };
+  
+      try {
+        // Update the user's data in the parkingLogs collection using the document ID
+        const parkingLogsRef = collection(db, 'parkingLogs'); // Replace with your collection name
+        const querySnapshot = await getDocs(parkingLogsRef);
+        const parkingLog = querySnapshot.docs.find((doc) => doc.data().name === foundUser.name);
+  
+        if (parkingLog) {
+          await updateDoc(doc(parkingLogsRef, parkingLog.id), newRow);
+          console.log('User data updated in parkingLogs collection:', newRow);
+        }
+      } catch (error) {
+        console.error('Error updating document: ', error);
+      }
+  
       setData((prevData) => {
         const updatedData = prevData.map((row) => {
-          if (row.name === `${foundUser.fName} ${foundUser.lName}`) {
+          if (row.name === foundUser.name) {
             return {
               ...row,
               ...newRow,
@@ -123,11 +133,13 @@ function OperatorDashboard() {
         });
         return updatedData;
       });
+  
       setFoundUser(null);
       setOccupants((prevTotal) => prevTotal + 1);
       setTotalRevenues((prevTotal) => prevTotal + fixedPrice);
     }
   };
+  
 
 
 
@@ -224,11 +236,11 @@ function OperatorDashboard() {
           <div style={{backgroundColor:'white', textAlign:'center', marginTop:'20px', borderRadius:'10px', height:'300px'}}>
           {foundUser && (
             <div>
-              <h2 style={{fontFamily:'Courier New'}}>User Information:</h2>
-              <p style={{fontFamily:'Copperplate'}}>First Name: {foundUser.name}</p>
-              <p style={{fontFamily:'Copperplate'}}>Vehicle: {foundUser.car}</p>
-              <p style={{fontFamily:'Copperplate'}}>Plate No: {foundUser.carPlateNumber}</p>
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <h2 style={{ fontFamily: 'Courier New' }}>User Information:</h2>
+              <p style={{ fontFamily: 'Copperplate' }}>First Name: {foundUser.name}</p>
+              <p style={{ fontFamily: 'Copperplate' }}>Vehicle: {foundUser.car}</p>
+              <p style={{ fontFamily: 'Copperplate' }}>Plate No: {foundUser.carPlateNumber}</p>              
+           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                 <button
                   className="button"
                   style={{ marginRight: '20px', backgroundColor: '#86FF33', fontFamily:'Garamond', marginBottom:'10px'}}

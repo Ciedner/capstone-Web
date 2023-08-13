@@ -81,7 +81,7 @@ const feedbackData = [
         } else {
           reject(new Error("Feedback not found"));
         }
-      }, 500); // Simulating API delay
+      }, 500);
     });
   }
   

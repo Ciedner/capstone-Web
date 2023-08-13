@@ -39,7 +39,7 @@ const Establishment = () => {
   const establishmentData = location.state; 
 
   const handleButtonClick = () => {
-    navigate("/OperatorDashboard");
+    navigate("/TicketInfo");
   };
   const handleAgentSchedule = () => {
     navigate("/AgentSchedule");

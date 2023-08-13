@@ -11,6 +11,7 @@ import Profiles from "./components/Profiles"
 import ForgetPassword from "./components/ForgetPassword"
 import OperatorProfile from "./Operator/OperatorProfile"
 import AgentSchedule from "./components/AgentSchedule"
+import TicketInfo from "./components/TicketInfo"
 
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -32,6 +33,7 @@ function App() {
           <Route path="forget" element={<ForgetPassword/>} />
           <Route path="OperatorProfile" element={<OperatorProfile/>} />
           <Route path="AgentSchedule" element={<AgentSchedule/>} />
+          <Route path="TicketInfo" element={<TicketInfo/>} />
         </Routes>
       </Router>
     </div>
