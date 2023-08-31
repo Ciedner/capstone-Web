@@ -52,7 +52,7 @@ function Login() {
       if (user && user.data().password === password) {
         alert('Login successful!');
         if (userType === 'agents') {
-          navigate('/OperatorDashboard', { state: user.data() });
+          navigate('/ViewSpace', { state: user.data() });
         } else {
           navigate('/Dashboard', { state: user.data() });
         }
@@ -150,7 +150,7 @@ function Login() {
           style={selectStyle}
         >
           <option value="" >Please select type of account</option>
-          <option value="agents">Agent</option>
+          <option value="agents">Operator</option>
           <option value="establishment">Establishment</option>
         </select>
         <form onSubmit={handleSubmit}>

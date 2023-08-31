@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Row, Col} from 'react-bootstrap';
-import { Container, Dropdown, DropdownButton } from 'react-bootstrap';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button, Modal, Form} from 'react-bootstrap';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
+import { db } from "../config/firebase";
+import { collection, getDocs} from 'firebase/firestore';
+
 
 const ParkingSlot = () => {
     const styles = {
@@ -65,6 +68,59 @@ const ParkingSlot = () => {
     }
   };
 
+  const [showModal, setShowModal] = useState(false); 
+  const [selectedSlot, setSelectedSlot] = useState(null); 
+
+  const handleSlotClick = (index) => {
+    setSelectedSlot(index);
+    setShowModal(true);
+  };
+  const [textToAdd, setTextToAdd] = useState("");
+
+  const handleAddText = async () => {
+    try {
+      const collectionRef = collection(db, 'user'); 
+      const querySnapshot = await getDocs(collectionRef);
+      
+      const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === textToAdd);
+    
+      if (user) {
+        console.log('Found user:', user.data());
+        const updatedSets = [...slotSets];
+        updatedSets[currentSetIndex].slots[selectedSlot] = {
+          ...updatedSets[currentSetIndex].slots[selectedSlot],
+          text: user.data().carPlateNumber,
+          occupied: true,
+          timestamp: new Date(),
+        };
+        setSlotSets(updatedSets);
+        setZoneAvailableSpaces(prevSpaces => {
+          const updatedSpaces = [...prevSpaces];
+          updatedSpaces[currentSetIndex]--;
+          return updatedSpaces;
+        });
+      } else {
+        console.log('User not found.');
+        const updatedSets = [...slotSets];
+        updatedSets[currentSetIndex].slots[selectedSlot] = {
+          text: textToAdd,
+          occupied: true,
+          timestamp: new Date(),
+        };
+        setSlotSets(updatedSets);
+        setZoneAvailableSpaces(prevSpaces => {
+          const updatedSpaces = [...prevSpaces];
+          updatedSpaces[currentSetIndex]--;
+          return updatedSpaces;
+        });
+      }
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  
+
   return (
     <div style={{ textAlign: 'center' }}>
         < nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
@@ -83,7 +139,7 @@ const ParkingSlot = () => {
                         src="dashboard.jpg"
                         alt="Operator Dashboard Logo"
                         style={{ width: '20px', marginRight: '10px'}}
-                      />Dashboard</Dropdown.Item>
+                      />Records</Dropdown.Item>
                       <Dropdown.Item href="OperatorProfile">
                 <img
                         src="opname.jpg"
@@ -118,9 +174,9 @@ const ParkingSlot = () => {
           <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
           <Button onClick={handleNext}>Next</Button>
         </div>
-      <div
+        <div
         style={{
-          display:'grid',
+          display: 'grid',
           gridTemplateRows: `auto repeat(${rows}, 1fr)`,
           gridTemplateColumns: `repeat(${cols}, 1fr)`,
           gap: '10px',
@@ -128,18 +184,17 @@ const ParkingSlot = () => {
           margin: '0 auto',
           border: '5px solid black',
           padding: '25px',
-       
-          maxHeight:'500px',
-          marginBottom: '20px'
+          maxHeight: '500px',
+          marginBottom: '20px',
         }}
       >
-        {slotSets[currentSetIndex].slots.map((isOccupied, index) => (
+        {slotSets[currentSetIndex].slots.map((slot, index) => (
           <div
             key={index}
             style={{
               width: '90px',
               height: '80px',
-              backgroundColor: isOccupied ? 'red' : 'green',
+              backgroundColor: slot.occupied ? 'red' : 'green',
               color: 'white',
               display: 'flex',
               justifyContent: 'center',
@@ -147,12 +202,35 @@ const ParkingSlot = () => {
               cursor: 'pointer',
               marginLeft: '35px',
             }}
-            onClick={() => toggleOccupancy(currentSetIndex, index)}
+            onClick={() => handleSlotClick(index)}
           >
-            {index + 1}
+            {slot.text ? slot.text : index + 1}
           </div>
         ))}
       </div>
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Add Text:</Form.Label>
+            <Form.Control
+              type="text"
+              value={textToAdd}
+              onChange={(e) => setTextToAdd(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleAddText}>
+            Add
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

@@ -50,7 +50,7 @@ function OperatorDashboard() {
       const collectionRef = collection(db, 'user'); 
       const querySnapshot = await getDocs(collectionRef);
       
-      const user = querySnapshot.docs.find(doc => doc.data().email === searchInput);
+      const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === searchInput);
   
       if (user) {
         console.log('Found user:', user.data());
@@ -169,7 +169,7 @@ function OperatorDashboard() {
                         src="slot1.jpeg"
                         alt="Operator Parking Slot Logo"
                         style={{ width: '20px', marginRight: '10px'}}
-                      />View Parking Slots</Dropdown.Item>
+                      />Dashboard</Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item href="/"><img
                         src="logout.png"

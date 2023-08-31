@@ -70,12 +70,12 @@ export default function EditButton() {
                         src="dashboard.jpg"
                         alt="Operator Dashboard Logo"
                         style={{ width: '20px', marginRight: '10px'}}
-                      />Dashboard</Dropdown.Item>
+                      />Records</Dropdown.Item>
                         <Dropdown.Item href="ViewSpace"><img
                         src="slot1.jpeg"
                         alt="Operator Parking Slot Logo"
                         style={{ width: '20px', marginRight: '10px'}}
-                      />View Parking Slots</Dropdown.Item>
+                      />Dashboard</Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item href="/"><img
                         src="logout.png"
