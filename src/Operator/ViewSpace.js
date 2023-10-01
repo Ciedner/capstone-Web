@@ -43,6 +43,7 @@ const ParkingSlot = () => {
     updatedAvailableSpaces[setIndex] += isOccupied ? 1 : -1;
     setZoneAvailableSpaces(updatedAvailableSpaces);
   };
+  
 
   const rows = 5;
   const cols = 3;
@@ -76,29 +77,19 @@ const ParkingSlot = () => {
     setShowModal(true);
   };
   const [textToAdd, setTextToAdd] = useState("");
+  const [userPlateNumber, setUserPlateNumber] = useState("");
+
 
   const handleAddText = async () => {
     try {
-      const collectionRef = collection(db, 'user'); 
+      const collectionRef = collection(db, 'user');
       const querySnapshot = await getDocs(collectionRef);
-      
+  
       const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === textToAdd);
-    
+  
       if (user) {
         console.log('Found user:', user.data());
-        const updatedSets = [...slotSets];
-        updatedSets[currentSetIndex].slots[selectedSlot] = {
-          ...updatedSets[currentSetIndex].slots[selectedSlot],
-          text: user.data().carPlateNumber,
-          occupied: true,
-          timestamp: new Date(),
-        };
-        setSlotSets(updatedSets);
-        setZoneAvailableSpaces(prevSpaces => {
-          const updatedSpaces = [...prevSpaces];
-          updatedSpaces[currentSetIndex]--;
-          return updatedSpaces;
-        });
+        setUserPlateNumber(user.data().carPlateNumber);
       } else {
         console.log('User not found.');
         const updatedSets = [...slotSets];
@@ -114,6 +105,7 @@ const ParkingSlot = () => {
           return updatedSpaces;
         });
       }
+  
       setShowModal(false);
     } catch (error) {
       console.error('Error:', error);
@@ -156,23 +148,8 @@ const ParkingSlot = () => {
               </p>
         </div>
       </nav>
-            <div style={{ textAlign: 'center', fontSize: '15px', marginTop:'10px'}}>
+      <div style={{ textAlign: 'center', fontSize: '15px', marginTop:'10px', marginBottom:'15px'}}>
                     <h3>{slotSets[currentSetIndex].title}</h3>
-          <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
-          <span>  Total Parking Spaces: {initialTotalSpaces}</span>
-          <br />
-          <span> Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
-        </div>
-        </div>
-        <div style={{ textAlign: 'center', marginTop: '5px', fontSize:'15px'}}>
-            <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'green', marginRight: '10px' }}></div>
-                <span>Available</span>
-                     <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'red', marginLeft: '20px', marginRight: '10px' }}></div>
-                 <span>Occupied</span>
-            </div>
-        <div style={{textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginTop: '5px', marginLeft:'450px', marginBottom:'5px'}}>
-          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
-          <Button onClick={handleNext}>Next</Button>
         </div>
         <div
         style={{
@@ -213,15 +190,25 @@ const ParkingSlot = () => {
           <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form.Group>
-            <Form.Label>Add Text:</Form.Label>
-            <Form.Control
-              type="text"
-              value={textToAdd}
-              onChange={(e) => setTextToAdd(e.target.value)}
-            />
-          </Form.Group>
-        </Modal.Body>
+  <Form.Group>
+    <Form.Label>Enter Plate Number:</Form.Label>
+    <Form.Control
+      type="text"
+      value={textToAdd}
+      onChange={(e) => {
+        setTextToAdd(e.target.value);
+        setUserPlateNumber(""); // Reset the user plate number state when typing
+      }}
+    />
+  </Form.Group>
+  {userPlateNumber && (
+    <div style={{ marginTop: '10px' }}>
+      User's Plate Number: {userPlateNumber}
+    </div>
+  )}
+</Modal.Body>
+
+
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Close
@@ -231,7 +218,23 @@ const ParkingSlot = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+      <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
+          <span>  Total Parking Spaces: {initialTotalSpaces}</span>
+          <br />
+          <span> Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '5px', fontSize:'15px'}}>
+            <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'green', marginRight: '10px' }}></div>
+                <span>Available</span>
+                     <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'red', marginLeft: '20px', marginRight: '10px' }}></div>
+                 <span>Occupied</span>
+            </div>
+      <div style={{textAlign: 'center', fontSize: '20px', fontWeight: 'bold', marginTop: '5px', marginLeft:'450px', marginBottom:'5px'}}>
+          <Button onClick={handlePrev} style={{ marginRight: '20px', backgroundColor: 'gray' }}>Prev</Button>
+          <Button onClick={handleNext}>Next</Button>
+        </div>
     </div>
+    
   );
 };
 
