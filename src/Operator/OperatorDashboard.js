@@ -12,6 +12,7 @@ import {db} from "../config/firebase"
 import { collection, getDocs, addDoc, updateDoc,  doc, Timestamp } from 'firebase/firestore';
 
 function OperatorDashboard() {
+  const [a, setA ] = useState([]);
   const [data, setData] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [foundUser, setFoundUser] = useState(null);
