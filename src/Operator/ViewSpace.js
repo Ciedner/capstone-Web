@@ -4,7 +4,8 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs} from 'firebase/firestore';
+import { collection, getDocs, query, where} from 'firebase/firestore';
+import SearchForm from './SearchForm';
 
 
 const ParkingSlot = () => {
@@ -33,15 +34,27 @@ const ParkingSlot = () => {
     initialSlotSets.map(zone => zone.slots.length)
   );
 
-  const toggleOccupancy = (setIndex, boxIndex) => {
-    const updatedSets = [...slotSets];
-    const isOccupied = updatedSets[setIndex].slots[boxIndex];
-    updatedSets[setIndex].slots[boxIndex] = !isOccupied;
-    setSlotSets(updatedSets);
-  
-    const updatedAvailableSpaces = [...zoneAvailableSpaces];
-    updatedAvailableSpaces[setIndex] += isOccupied ? 1 : -1;
-    setZoneAvailableSpaces(updatedAvailableSpaces);
+
+  const searchInFirebase = async (searchInput) => {
+    try {
+      const collectionRef = collection(db, 'user');
+      const q = query(collectionRef, where('carPlateNumber', '==', searchInput));
+      const querySnapshot = await getDocs(q);
+
+      const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === searchInput);
+
+      if (user) {
+        console.log('Found user:', user.data());
+        setUserPlateNumber(user.data().carPlateNumber);
+        setUserDetails(user.data());
+      } else {
+        console.log('User not found.');
+        setUserDetails(null); // Set userDetails to null when user is not found
+        setUserPlateNumber(searchInput); // Set userPlateNumber to the search input
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
   
 
@@ -71,47 +84,45 @@ const ParkingSlot = () => {
 
   const [showModal, setShowModal] = useState(false); 
   const [selectedSlot, setSelectedSlot] = useState(null); 
-
+  const [showUserDetails, setShowUserDetails] = useState(false);
+  
+  const [selectedPlateNumber, setSelectedPlateNumber] = useState(""); 
+  const handleAddToSlot = (carPlateNumber, slotIndex) => {
+    setSelectedPlateNumber(carPlateNumber);
+    setShowModal(false);
+  
+    const updatedSets = [...slotSets];
+    updatedSets[currentSetIndex].slots[slotIndex] = {
+      text: carPlateNumber,
+      occupied: true,
+      timestamp: new Date(),
+      userDetails: userDetails,
+    };
+    setSlotSets(updatedSets);
+  
+    setZoneAvailableSpaces((prevSpaces) => {
+      const updatedSpaces = [...prevSpaces];
+      updatedSpaces[currentSetIndex]--;
+      return updatedSpaces;
+    });
+  };
+  
+  
   const handleSlotClick = (index) => {
     setSelectedSlot(index);
     setShowModal(true);
+    setUserDetails(slotSets[currentSetIndex].slots[index]?.userDetails || null);
   };
-  const [textToAdd, setTextToAdd] = useState("");
+  
+
+  
+  const handleClose = () => {
+    // Define what should happen when the modal is closed
+  };
+  const [userDetails, setUserDetails] = useState(null);
+  const [textToAdd, setTextToAdd] = useState ("");
   const [userPlateNumber, setUserPlateNumber] = useState("");
 
-
-  const handleAddText = async () => {
-    try {
-      const collectionRef = collection(db, 'user');
-      const querySnapshot = await getDocs(collectionRef);
-  
-      const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === textToAdd);
-  
-      if (user) {
-        console.log('Found user:', user.data());
-        setUserPlateNumber(user.data().carPlateNumber);
-      } else {
-        console.log('User not found.');
-        const updatedSets = [...slotSets];
-        updatedSets[currentSetIndex].slots[selectedSlot] = {
-          text: textToAdd,
-          occupied: true,
-          timestamp: new Date(),
-        };
-        setSlotSets(updatedSets);
-        setZoneAvailableSpaces(prevSpaces => {
-          const updatedSpaces = [...prevSpaces];
-          updatedSpaces[currentSetIndex]--;
-          return updatedSpaces;
-        });
-      }
-  
-      setShowModal(false);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-  
 
   return (
     <div style={{ textAlign: 'center' }}>
@@ -180,44 +191,56 @@ const ParkingSlot = () => {
               marginLeft: '35px',
             }}
             onClick={() => handleSlotClick(index)}
-          >
-            {slot.text ? slot.text : index + 1}
+            >
+            {slot.occupied ? (
+              <div>
+                <div>{slot.text}</div>
+                <div>{slot.userDetails && slot.userDetails.carPlateNumber}</div>
+              </div>
+            ) : (
+              index + 1
+            )}
           </div>
         ))}
       </div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-  <Form.Group>
-    <Form.Label>Enter Plate Number:</Form.Label>
-    <Form.Control
-      type="text"
-      value={textToAdd}
-      onChange={(e) => {
-        setTextToAdd(e.target.value);
-        setUserPlateNumber(""); // Reset the user plate number state when typing
-      }}
-    />
-  </Form.Group>
-  {userPlateNumber && (
-    <div style={{ marginTop: '10px' }}>
-      User's Plate Number: {userPlateNumber}
-    </div>
+  <Modal.Header closeButton>
+    <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+  {selectedSlot !== null && (
+  <SearchForm
+  onSearch={searchInFirebase}
+  onSelectSlot={(carPlateNumber) => handleAddToSlot(carPlateNumber, selectedSlot)}
+  selectedSlot={selectedSlot}
+/>
+
   )}
-</Modal.Body>
 
-
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleAddText}>
-            Add
-          </Button>
-        </Modal.Footer>
-      </Modal>
+{selectedSlot !== null && userDetails !== null && (
+  <div style={{ marginTop: '10px' }}>
+    <h4>User Details:</h4>
+    <p>Email: {userDetails.email}</p>
+    <p>Contact Number: {userDetails.contactNumber}</p>
+    <p>Car Plate Number: {userDetails.carPlateNumber}</p>
+    <p>Gender: {userDetails.gender}</p>
+    <p>Age: {userDetails.age}</p>
+    <p>Address: {userDetails.address}</p>
+    {slotSets[currentSetIndex].slots[selectedSlot].timestamp && (
+      <p>Timestamp: {slotSets[currentSetIndex].slots[selectedSlot].timestamp.toString()}</p>
+    )}
+  </div>
+)}
+    {userPlateNumber && userDetails === null && (
+      <div style={{ marginTop: '10px' }}>
+        User's Plate Number: {userPlateNumber}
+      </div>
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    
+  </Modal.Footer>
+</Modal>
       <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
           <span>  Total Parking Spaces: {initialTotalSpaces}</span>
           <br />
