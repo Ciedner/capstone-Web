@@ -85,17 +85,19 @@ const ParkingSlot = () => {
   const [showModal, setShowModal] = useState(false); 
   const [selectedSlot, setSelectedSlot] = useState(null); 
   const [showUserDetails, setShowUserDetails] = useState(false);
-  
   const [selectedPlateNumber, setSelectedPlateNumber] = useState(""); 
   const handleAddToSlot = (carPlateNumber, slotIndex) => {
     setSelectedPlateNumber(carPlateNumber);
     setShowModal(false);
   
     const updatedSets = [...slotSets];
+    const timestamp = new Date();
+    const userDetails = { carPlateNumber, timestamp };
+  
     updatedSets[currentSetIndex].slots[slotIndex] = {
       text: carPlateNumber,
       occupied: true,
-      timestamp: new Date(),
+      timestamp: timestamp,
       userDetails: userDetails,
     };
     setSlotSets(updatedSets);
@@ -108,17 +110,32 @@ const ParkingSlot = () => {
   };
   
   
+  
   const handleSlotClick = (index) => {
     setSelectedSlot(index);
     setShowModal(true);
     setUserDetails(slotSets[currentSetIndex].slots[index]?.userDetails || null);
   };
   
-  const handleClose = () => {
-    // Define what should happen when the modal is closed
+  
+  const handleExitSlot = (slotIndex) => {
+    const updatedSets = [...slotSets];
+    updatedSets[currentSetIndex].slots[slotIndex] = {
+      text: slotIndex + 1, // Set the text to the slot number
+      occupied: false,
+      timestamp: null,
+      userDetails: null,
+    };
+    setSlotSets(updatedSets);
+  
+    setZoneAvailableSpaces((prevSpaces) => {
+      const updatedSpaces = [...prevSpaces];
+      updatedSpaces[currentSetIndex]++;
+      return updatedSpaces;
+    });
   };
 
-  const [a, setA] = useState(null);
+
   const [userDetails, setUserDetails] = useState(null);
   const [textToAdd, setTextToAdd] = useState ("");
   const [userPlateNumber, setUserPlateNumber] = useState("");
@@ -176,32 +193,31 @@ const ParkingSlot = () => {
           marginBottom: '20px',
         }}
       >
-        {slotSets[currentSetIndex].slots.map((slot, index) => (
-          <div
-            key={index}
-            style={{
-              width: '90px',
-              height: '80px',
-              backgroundColor: slot.occupied ? 'red' : 'green',
-              color: 'white',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              cursor: 'pointer',
-              marginLeft: '35px',
-            }}
-            onClick={() => handleSlotClick(index)}
-            >
-            {slot.occupied ? (
-              <div>
-                <div>{slot.text}</div>
-                <div>{slot.userDetails && slot.userDetails.carPlateNumber}</div>
-              </div>
-            ) : (
-              index + 1
-            )}
-          </div>
-        ))}
+       {slotSets[currentSetIndex].slots.map((slot, index) => (
+  <div
+    key={index}
+    style={{
+      width: '90px',
+      height: '80px',
+      backgroundColor: slot.occupied ? 'red' : 'green',
+      color: 'white',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      cursor: 'pointer',
+      marginLeft: '35px',
+    }}
+    onClick={() => handleSlotClick(index)}
+    >
+    {slot.occupied ? (
+      <div>
+        <div>{slot.userDetails ? slot.userDetails.carPlateNumber : slot.text}</div>
+      </div>
+    ) : (
+      index + 1
+    )}
+  </div>
+))}
       </div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
   <Modal.Header closeButton>
@@ -212,7 +228,9 @@ const ParkingSlot = () => {
   <SearchForm
   onSearch={searchInFirebase}
   onSelectSlot={(carPlateNumber) => handleAddToSlot(carPlateNumber, selectedSlot)}
+  onExitSlot={() => handleExitSlot(selectedSlot)}
   selectedSlot={selectedSlot}
+  userDetails={userDetails}
 />
 
   )}
@@ -231,11 +249,6 @@ const ParkingSlot = () => {
     )}
   </div>
 )}
-    {userPlateNumber && userDetails === null && (
-      <div style={{ marginTop: '10px' }}>
-        User's Plate Number: {userPlateNumber}
-      </div>
-    )}
   </Modal.Body>
   <Modal.Footer>
     
