@@ -114,11 +114,11 @@ const ParkingSlot = () => {
     setUserDetails(slotSets[currentSetIndex].slots[index]?.userDetails || null);
   };
   
-
-  
   const handleClose = () => {
     // Define what should happen when the modal is closed
   };
+
+  const [a, setA] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [textToAdd, setTextToAdd] = useState ("");
   const [userPlateNumber, setUserPlateNumber] = useState("");
