@@ -13,6 +13,7 @@ const App = () => {
   const [showSchedule, setShowSchedule] = useState(false);
   const [parkingLogsData, setParkingLogsData] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
+  const [logsData, setLogsData] = useState([]);
   const [revenue, setRevenue] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,11 +42,11 @@ const App = () => {
 
 
   useEffect(() => {
-    const parkingLogsRef = collection(db, 'parkingLogs');
+    const logsRef = collection(db, 'logs');
 
-    const unsubscribe = onSnapshot(parkingLogsRef, (snapshot) => {
+    const unsubscribe = onSnapshot(logsRef, (snapshot) => {
       const newData = snapshot.docs.map((doc) => doc.data());
-      setParkingLogsData(newData);
+      setLogsData(newData);
     });
 
     return () => {
@@ -174,10 +175,10 @@ const App = () => {
               <thead>
                 <tr>
                   <th><img
-                        src="num.png"
-                        alt="ID"
+                        src="em.png"
+                        alt="Email"
                         style={{ width: '30px', marginRight: '10px'}}
-                      />ID</th>
+                      />Customer Email</th>
                   <th><img
                         src="calendar.webp"
                         alt="Calendar"
@@ -196,10 +197,13 @@ const App = () => {
                 </tr>
               </thead>
               <tbody>
-              {parkingLogsData.map((row) => (
+              {logsData.map((row) => (
                 <tr key={row.id}>
-                  <td>{row.id}</td>
-                  <td>{row.timeOut}</td>
+                  <td>{row.email}</td>
+                  <td><h5 style={{fontFamily:'Georgina', fontSize:'15px', color:'green'}}>Time in: </h5>{new Date(row.timeOut.seconds * 1000).toLocaleString()}
+                  <br></br>
+                  <h5 style={{fontFamily:'Georgina', fontSize:'15px', color:'red'}}>Time out: </h5>{new Date(row.timeIn.seconds * 1000).toLocaleString()}
+                  </td>
                   <td>{row.name} - {row.paymentStatus}</td>
                   <td>30</td>
                 </tr>
@@ -216,15 +220,10 @@ const App = () => {
                     <thead>
                       <tr>
                         <th><img
-                        src="num.png"
-                        alt="Name"
+                        src="em.png"
+                        alt="Email"
                         style={{ width: '30px', marginRight: '10px'}}
-                      />ID</th>
-                        <th><img
-                        src="opname.jpg"
-                        alt="Name"
-                        style={{ width: '30px', marginRight: '10px'}}
-                      />Customer Name</th>
+                      />Customer Email</th>
                         <th><img
                         src="cars.jpg"
                         alt="cars"
@@ -248,14 +247,13 @@ const App = () => {
                       </tr>
                     </thead>
                     <tbody>
-              {parkingLogsData.map((row) => (
+              {logsData.map((row) => (
                 <tr key={row.id}>
-                  <td>{row.id}</td>
-                  <td>{row.name}</td>
-                  <td>{row.vehicle}</td>
-                  <td>{row.plateNo}</td>
-                  <td>{row.timeIn}</td>
-                  <td>{row.timeOut}</td>
+                  <td>{row.email}</td>
+                  <td>{row.car}</td>
+                  <td>{row.carPlateNumber}</td>
+                  <td>{new Date(row.timeIn.seconds * 1000).toLocaleString()}</td>
+                  <td>{new Date(row.timeOut.seconds * 1000).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
