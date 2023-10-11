@@ -35,27 +35,32 @@ const ParkingSlot = () => {
   );
 
 
+  const [recordFound, setRecordFound] = useState(true); 
+  const [userFound, setUserFound] = useState(true);
   const searchInFirebase = async (searchInput) => {
     try {
-        const collectionRef = collection(db, 'user');
-        const q = query(collectionRef, where('carPlateNumber', '==', searchInput));
-        const querySnapshot = await getDocs(q);
-
-        const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === searchInput);
-
-        if (user) {
-            console.log('Found user:', user.data());
-            setUserPlateNumber(user.data().carPlateNumber);
-            setUserDetails(user.data());
-        } else {
-            console.log('User not found.');
-            setUserDetails({}); // Set userDetails to an empty object when user is not found
-            setUserPlateNumber(searchInput); // Set userPlateNumber to the search input
-        }
+      const collectionRef = collection(db, 'user');
+      const q = query(collectionRef, where('carPlateNumber', '==', searchInput));
+      const querySnapshot = await getDocs(q);
+  
+      const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === searchInput);
+  
+      if (user) {
+        console.log('Found user:', user.data());
+        setUserPlateNumber(user.data().carPlateNumber);
+        setUserDetails(user.data());
+        setUserFound(true);
+      } else {
+        console.log('User not found.');
+        setUserDetails({}); 
+        setUserPlateNumber(searchInput);
+        setUserFound(false); 
+      }
     } catch (error) {
-        console.error('Error:', error);
+      console.error('Error:', error);
     }
-};
+  };
+  
 
   
 
@@ -110,33 +115,41 @@ const ParkingSlot = () => {
   const [userDetails, setUserDetails] = useState({});
   const [userPlateNumber, setUserPlateNumber] = useState("");
   const handleAddToSlot = (carPlateNumber, slotIndex) => {
-    if (carPlateNumber.trim() === "") {
+    if (!carPlateNumber || carPlateNumber.trim() === "") {
       setErrorMessage("Please enter a plate number.");
       return;
+    }
+    if (!userFound) {
+      const confirmAssign = window.confirm("No record found. Do you want to proceed?");
+      if (!confirmAssign) {
+        return;
+      }
     }
     setSelectedPlateNumber(carPlateNumber);
     setShowModal(false);
   
     const updatedSets = [...slotSets];
     const timestamp = new Date();
-    const updatedUserDetails = { 
+  
+    const updatedUserDetails = {
       carPlateNumber,
-      email: userDetails?.email || '',
-      contactNumber: userDetails?.contactNumber || '',
-      carPlateNumber: userDetails?.carPlateNumber || '',
-      car: userDetails?.car|| '',
-      gender: userDetails?.gender || '',
-      age: userDetails?.age || '',
-      address: userDetails?.address || '',
-      timestamp 
+      email: userDetails?.email || "",
+      contactNumber: userDetails?.contactNumber || "",
+      carPlateNumber: userDetails?.carPlateNumber || carPlateNumber,
+      car: userDetails?.car || "",
+      gender: userDetails?.gender || "",
+      age: userDetails?.age || "",
+      address: userDetails?.address || "",
+      timestamp,
     };
   
     updatedSets[currentSetIndex].slots[slotIndex] = {
       text: carPlateNumber,
       occupied: true,
       timestamp: timestamp,
-      userDetails: updatedUserDetails, 
+      userDetails: updatedUserDetails,
     };
+  
     setSlotSets(updatedSets);
   
     setZoneAvailableSpaces((prevSpaces) => {
@@ -144,11 +157,11 @@ const ParkingSlot = () => {
       updatedSpaces[currentSetIndex]--;
       return updatedSpaces;
     });
-    addToLogs(updatedUserDetails); 
+  
+    addToLogs(updatedUserDetails);
     setErrorMessage("");
   };
   
-
   
   
   const handleSlotClick = (index) => {
@@ -207,6 +220,7 @@ const ParkingSlot = () => {
   const handleCancelExit = () => {
     setShowExitConfirmation(false); 
   };
+  
   
 
 
@@ -305,7 +319,6 @@ const ParkingSlot = () => {
 />
 
   )}
-
 {selectedSlot !== null && userDetails !== null && (
   <div style={{ marginTop: '10px' }}>
     <h4>User Details:</h4>
@@ -322,7 +335,7 @@ const ParkingSlot = () => {
 )}
   </Modal.Body>
   <Modal.Footer>
-    
+  {recordFound ? null : <div style={{ color: 'red' }}>No record found for this car plate number.</div>}
   </Modal.Footer>
 </Modal>
     <Modal show={showExitConfirmation} onHide={handleCancelExit}>
