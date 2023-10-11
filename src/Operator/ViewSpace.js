@@ -4,7 +4,7 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where} from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc} from 'firebase/firestore';
 import SearchForm from './SearchForm';
 
 
@@ -37,25 +37,26 @@ const ParkingSlot = () => {
 
   const searchInFirebase = async (searchInput) => {
     try {
-      const collectionRef = collection(db, 'user');
-      const q = query(collectionRef, where('carPlateNumber', '==', searchInput));
-      const querySnapshot = await getDocs(q);
+        const collectionRef = collection(db, 'user');
+        const q = query(collectionRef, where('carPlateNumber', '==', searchInput));
+        const querySnapshot = await getDocs(q);
 
-      const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === searchInput);
+        const user = querySnapshot.docs.find(doc => doc.data().carPlateNumber === searchInput);
 
-      if (user) {
-        console.log('Found user:', user.data());
-        setUserPlateNumber(user.data().carPlateNumber);
-        setUserDetails(user.data());
-      } else {
-        console.log('User not found.');
-        setUserDetails(null); // Set userDetails to null when user is not found
-        setUserPlateNumber(searchInput); // Set userPlateNumber to the search input
-      }
+        if (user) {
+            console.log('Found user:', user.data());
+            setUserPlateNumber(user.data().carPlateNumber);
+            setUserDetails(user.data());
+        } else {
+            console.log('User not found.');
+            setUserDetails({}); // Set userDetails to an empty object when user is not found
+            setUserPlateNumber(searchInput); // Set userPlateNumber to the search input
+        }
     } catch (error) {
-      console.error('Error:', error);
+        console.error('Error:', error);
     }
-  };
+};
+
   
 
   const rows = 5;
@@ -86,19 +87,55 @@ const ParkingSlot = () => {
   const [selectedSlot, setSelectedSlot] = useState(null); 
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [selectedPlateNumber, setSelectedPlateNumber] = useState(""); 
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const addToLogs = async (userDetails) => {
+    try {
+      const logsCollectionRef = collection(db, 'logs'); 
+      const timestamp = serverTimestamp();
+      const logData = {
+        ...userDetails,
+        paymentStatus: 'Pending',
+        timeIn: timestamp,
+        timeOut: null,
+      };
+  
+      const docRef = await addDoc(logsCollectionRef, logData);
+      console.log('Log added with ID: ', docRef.id);
+    } catch (error) {
+      console.error('Error adding log: ', error);
+    }
+  };
+  
+  const [userDetails, setUserDetails] = useState({});
+  const [userPlateNumber, setUserPlateNumber] = useState("");
   const handleAddToSlot = (carPlateNumber, slotIndex) => {
+    if (carPlateNumber.trim() === "") {
+      setErrorMessage("Please enter a plate number.");
+      return;
+    }
     setSelectedPlateNumber(carPlateNumber);
     setShowModal(false);
   
     const updatedSets = [...slotSets];
     const timestamp = new Date();
-    const userDetails = { carPlateNumber, timestamp };
+    const updatedUserDetails = { 
+      carPlateNumber,
+      email: userDetails?.email || '',
+      contactNumber: userDetails?.contactNumber || '',
+      carPlateNumber: userDetails?.carPlateNumber || '',
+      car: userDetails?.car|| '',
+      gender: userDetails?.gender || '',
+      age: userDetails?.age || '',
+      address: userDetails?.address || '',
+      timestamp 
+    };
   
     updatedSets[currentSetIndex].slots[slotIndex] = {
       text: carPlateNumber,
       occupied: true,
       timestamp: timestamp,
-      userDetails: userDetails,
+      userDetails: updatedUserDetails, 
     };
     setSlotSets(updatedSets);
   
@@ -107,8 +144,11 @@ const ParkingSlot = () => {
       updatedSpaces[currentSetIndex]--;
       return updatedSpaces;
     });
+    addToLogs(updatedUserDetails); 
+    setErrorMessage("");
   };
   
+
   
   
   const handleSlotClick = (index) => {
@@ -117,11 +157,17 @@ const ParkingSlot = () => {
     setUserDetails(slotSets[currentSetIndex].slots[index]?.userDetails || null);
   };
   
-  
-  const handleExitSlot = (slotIndex) => {
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const handleExitSlot = async (slotIndex) => {
+    if (!slotSets[currentSetIndex].slots[slotIndex].occupied) {
+      setErrorMessage("This slot is already empty.");
+      return;
+    }
+    setSelectedSlot(slotIndex);
+    setShowExitConfirmation(true);
     const updatedSets = [...slotSets];
     updatedSets[currentSetIndex].slots[slotIndex] = {
-      text: slotIndex + 1, // Set the text to the slot number
+      text: slotIndex + 1, 
       occupied: false,
       timestamp: null,
       userDetails: null,
@@ -133,12 +179,35 @@ const ParkingSlot = () => {
       updatedSpaces[currentSetIndex]++;
       return updatedSpaces;
     });
+    const logData = {
+      carPlateNumber: userDetails.carPlateNumber,
+      timeOut: serverTimestamp(),
+      paymentStatus: 'Paid',
+    };
+  
+    try {
+      const logsCollectionRef = collection(db, 'logs');
+      const q = query(logsCollectionRef, where('carPlateNumber', '==', userDetails.carPlateNumber));
+      const querySnapshot = await getDocs(q);
+  
+      querySnapshot.forEach(async (doc) => {
+        const docRef = doc.ref;
+        await setDoc(docRef, logData, { merge: true });
+      });
+    } catch (error) {
+      console.error('Error updating logs: ', error);
+    }
+  
+    setErrorMessage('');
   };
 
-
-  const [userDetails, setUserDetails] = useState(null);
-  const [textToAdd, setTextToAdd] = useState ("");
-  const [userPlateNumber, setUserPlateNumber] = useState("");
+  const handleConfirmExit = () => {
+    setShowExitConfirmation(false);
+  };
+  const handleCancelExit = () => {
+    setShowExitConfirmation(false); 
+  };
+  
 
 
   return (
@@ -224,6 +293,8 @@ const ParkingSlot = () => {
     <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
   </Modal.Header>
   <Modal.Body>
+  {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+ 
   {selectedSlot !== null && (
   <SearchForm
   onSearch={searchInFirebase}
@@ -254,6 +325,20 @@ const ParkingSlot = () => {
     
   </Modal.Footer>
 </Modal>
+    <Modal show={showExitConfirmation} onHide={handleCancelExit}>
+      <Modal.Header closeButton>
+        <Modal.Title>Confirmation</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>Are you sure you want to vacant this slot?</Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleCancelExit}>
+          No
+        </Button>
+        <Button variant="primary" onClick={handleConfirmExit}>
+          Yes
+        </Button>
+      </Modal.Footer>
+    </Modal>
       <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
           <span>  Total Parking Spaces: {initialTotalSpaces}</span>
           <br />
