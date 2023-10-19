@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../config/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -44,26 +44,30 @@ function Login() {
         return;
       }
 
-      const collectionRef = collection(db, collectionName);
+      const collectionRef =  query(collection(db, collectionName), where('email', '==', email));
       const querySnapshot = await getDocs(collectionRef);
       
-      const user = querySnapshot.docs.find(doc => doc.data().email === email);
-
-      if (user && user.data().password === password) {
-        alert('Login successful!');
-        if (userType === 'agents') {
-          navigate('/ViewSpace', { state: user.data() });
+      if (!querySnapshot.empty) {
+        const user = querySnapshot.docs[0].data();
+        if (user.password === password) {
+          alert('Login successful!');
+          if (userType === 'agents') {
+            navigate('/ViewSpace', { state: user });
+          } else {
+            navigate('/Dashboard', { state: user });
+          }
         } else {
-          navigate('/Dashboard', { state: user.data() });
+          alert('Invalid login credentials. Please try again.');
         }
       } else {
-        alert('Invalid login credentials. Please try again.');
+        alert('User not found. Please try again.');
       }
     } catch (error) {
       console.error('Error logging in:', error);
       alert('Error logging in. Please try again.');
     }
   };
+
 
   const containerStyle = {
     display: 'flex',

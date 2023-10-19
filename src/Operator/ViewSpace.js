@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Button, Modal, Form} from 'react-bootstrap';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
@@ -162,8 +162,7 @@ const ParkingSlot = () => {
     setErrorMessage("");
   };
   
-  
-  
+
   const handleSlotClick = (index) => {
     setSelectedSlot(index);
     setShowModal(true);
@@ -221,8 +220,6 @@ const ParkingSlot = () => {
     setShowExitConfirmation(false); 
   };
   
-  
-
 
   return (
     <div style={{ textAlign: 'center' }}>

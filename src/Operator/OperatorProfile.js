@@ -14,6 +14,8 @@ import {
   MDBTypography,
 } from 'mdb-react-ui-kit';
 
+import {auth, db} from "../config/firebase"
+
 export default function EditButton() {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("Richard Macol"); 
