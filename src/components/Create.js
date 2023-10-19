@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { db } from '../config/firebase';
-import { addDoc, collection } from 'firebase/firestore';
+import { db, auth } from '../config/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 function Create() {
@@ -12,31 +13,25 @@ function Create() {
   const [parkingPay, setParkingPayment] = useState('');
   const [contact, setContact] = useState('');
 
-  const collectionRef = collection(db, 'establishments');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
   
     try {
-      console.log("Submitting form data:", {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Storing the user's information in Firestore.
+      // Note: We're not storing the password, since Firebase Auth handles it securely.
+      await setDoc(doc(db, "establishments", user.uid), {
         email,
         address,
         contact,
-        password,
         numberOfParkingLots,
         managementName,
         parkingPay,
-      });
-  
-      await addDoc(collectionRef, {
-        email,
-        address,
-        contact,
         password,
-        numberOfParkingLots,
-        managementName,
-        parkingPay,
       });
   
       console.log('Document successfully written!');
@@ -51,6 +46,7 @@ function Create() {
       navigate("/");
     } catch (error) {
       console.error('Error creating account:', error);
+      alert(error.message); // Informing the user about the error.
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { db } from '../config/firebase';
+import { db, auth } from '../config/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,6 +14,7 @@ function Login() {
   const navigate = useNavigate();
   const [userType, setUserType] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -33,6 +35,15 @@ function Login() {
     e.preventDefault();
 
     try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (!userCredential || !userCredential.user) {
+        console.error('User not found in userCredential');
+        return;
+      }
+  
+      const { user } = userCredential;
+      console.log('Authentication successful for UID:', user.uid);
+
       let collectionName = '';
 
       if (userType === 'agents') {
@@ -210,5 +221,4 @@ function Login() {
     </div>
   );
 }
-
 export default Login;

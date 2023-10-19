@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { db } from '../config/firebase';
-import { addDoc, collection } from 'firebase/firestore';
+import { db, auth } from '../config/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, collection, doc } from 'firebase/firestore';
 import { useNavigate, Link } from 'react-router-dom';
 import { DropdownButton, Dropdown, Button } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
@@ -39,27 +40,21 @@ function CreateAccount() {
     e.preventDefault();
 
     try {
-      console.log("Submitting form data:", {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "agents", user.uid), {
+        uid: user.uid,
         firstName,
         lastName,
         email,
-        password,
         phoneNumber,
         address,
+        password,
         selectedRadioOption,
       });
 
-      await addDoc(collectionRef, {
-        firstName,
-        lastName,
-        email,
-        password,
-        phoneNumber,
-        address,
-        selectedRadioOption,
-      });
-
-      console.log('Document successfully written!');
+      console.log('Document successfully written and user registered!');
       setFirstName('');
       setLastName('');
       setEmail('');
@@ -69,12 +64,12 @@ function CreateAccount() {
       setSelectedRadioOption('');
 
       alert('Successfully registered!');
-      navigate.navigate()
+      navigate("/Dashboard"); 
     } catch (error) {
       console.error('Error creating account:', error);
-      alert('Error registering. Please try again.');
+      alert(error.message);
     }
-  };
+};
 
   const handleRadioChange = (e) => {
     setSelectedRadioOption(e.target.value);
