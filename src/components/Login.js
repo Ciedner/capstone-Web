@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { db, auth } from '../config/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
+import UserContext from '../UserContext';
 
 function Login() {
+  const { setUser } = useContext(UserContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [establishmentData, setEstablishmentData] = useState(null); 
@@ -33,7 +34,7 @@ function Login() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if (!userCredential || !userCredential.user) {
@@ -43,9 +44,9 @@ function Login() {
   
       const { user } = userCredential;
       console.log('Authentication successful for UID:', user.uid);
-
+  
       let collectionName = '';
-
+  
       if (userType === 'agents') {
         collectionName = 'agents';
       } else if (userType === 'establishment') {
@@ -54,18 +55,24 @@ function Login() {
         alert('Please select a valid account type.');
         return;
       }
-
-      const collectionRef =  query(collection(db, collectionName), where('email', '==', email));
+  
+      const collectionRef = query(collection(db, collectionName), where('email', '==', email));
       const querySnapshot = await getDocs(collectionRef);
       
       if (!querySnapshot.empty) {
-        const user = querySnapshot.docs[0].data();
-        if (user.password === password) {
+        const userData = querySnapshot.docs[0].data();
+  
+        // Ensure that the password from Firestore matches the provided password
+        if (userData.password === password) {
+          // Set the userData in the context and localStorage
+          setUser(userData);
+  
           alert('Login successful!');
+  
           if (userType === 'agents') {
-            navigate('/ViewSpace', { state: user });
+            navigate('/ViewSpace', { state: userData });
           } else {
-            navigate('/Dashboard', { state: user });
+            navigate('/Dashboard', { state: userData });
           }
         } else {
           alert('Invalid login credentials. Please try again.');

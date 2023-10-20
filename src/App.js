@@ -11,6 +11,7 @@ import ForgetPassword from "./components/ForgetPassword"
 import OperatorProfile from "./Operator/OperatorProfile"
 import AgentSchedule from "./components/AgentSchedule"
 import TicketInfo from "./components/TicketInfo"
+import UserProvider from "./UserProvider";
 
 
 
@@ -18,6 +19,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
     <div className="App">
+      <UserProvider>
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
@@ -35,6 +37,7 @@ function App() {
           <Route path="TicketInfo" element={<TicketInfo/>} />
         </Routes>
       </Router>
+      </UserProvider>
     </div>
   );
 }

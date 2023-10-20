@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
@@ -14,22 +14,14 @@ import {
   MDBBtn,
   MDBTypography,
 } from 'mdb-react-ui-kit';
-
+import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
 
 export default function EditButton() {
   const [isEditing, setIsEditing] = useState(false);
   const location = useLocation();
-  const user = location.state || {
-    name: '',
-    address: '',
-    email: '',
-    contactNumber: '',
-    companyName: '',
-    companyAddress: '',
-    companyContact: '',
-    companyEmail: ''
-  };
+  const { user } = useContext(UserContext);
+
   const [name, setName] = useState(user.firstName || ""); 
   const [lastName, setLastName] = useState(user.lastName || ""); 
   const fullName = `${name} ${lastName}`;
