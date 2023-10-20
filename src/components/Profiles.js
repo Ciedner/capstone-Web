@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
+import { useLocation } from 'react-router-dom';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
 import { Link } from 'react-router-dom';
@@ -13,14 +14,49 @@ import {
   MDBBtn,
   MDBTypography,
 } from 'mdb-react-ui-kit';
+import UserContext from '../UserContext';
+import {auth, db} from "../config/firebase"
 
 export default function EditButton() {
+  const location = useLocation();
+  const { user } = useContext(UserContext);
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("Marky Parking Management"); 
-  const [location, setLocation] = useState("Talamban, Cebu"); 
-  const [description, setDescription] = useState("A parking space that will allocate drivers a spacious parking space"); 
-  const [companyContact, setCompanyContact] = useState("091234567890"); 
-  const [companyEmail, setCompanyEmail] = useState("markiesparkinglot@gmail.com"); 
+  const [name, setName] = useState(user.managementName || ""); 
+  const [address, setAddress] = useState(user.address || ""); 
+  const [description, setDescription] = useState(""); 
+  const [companyContact, setCompanyContact] = useState(user.contact || ""); 
+  const [companyEmail, setCompanyEmail] = useState(user.email || ""); 
+  const [companyName, setCompanyName] = useState (user.management || "");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Check if user is logged in
+        if (auth.currentUser) {
+          const userId = auth.currentUser.uid;
+
+          // Fetch user data from Firestore
+          const doc = await db.collection("establishments").doc(userId).get();
+
+          if (doc.exists) {
+            const userData = doc.data();
+            
+            setName(userData.managementName || "");
+            setAddress(userData.address || "");
+            setCompanyContact(userData.contact || "");
+            setCompanyName(userData.managementName || "");
+            setCompanyEmail(userData.email || "");
+          } else {
+            console.log("No user data found!");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    fetchUserData();
+  }, []); 
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
@@ -116,14 +152,14 @@ export default function EditButton() {
                   {isEditing ? (
                     <>
                       <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={{marginRight:'5px', marginBottom:'5px'}}/>
-                      <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} style={{marginRight:'5px'}} />
+                      <input type="text" placeholder="Location" value={address} onChange={(e) => setAddress(e.target.value)} style={{marginRight:'5px'}} />
                       <input type="text" placeholder="Email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} style={{marginRight:'5px'}} />
                       <input type="text" placeholder="Contact Number" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} />
                     </>
                   ) : (
                     <>
                       <MDBTypography tag="h5">{name}</MDBTypography>
-                      <MDBCardText>{location}</MDBCardText>
+                      <MDBCardText>{address}</MDBCardText>
                       <MDBCardText>{companyEmail}</MDBCardText>
                       <MDBCardText>{companyContact}</MDBCardText>
                     </>
@@ -157,7 +193,7 @@ export default function EditButton() {
                         src="esA.png"
                         alt="Establishment Address Logo"
                         style={{ width: '20px', marginRight: '10px'}}
-                      />{location}</MDBCardText>
+                      />{address}</MDBCardText>
                        <MDBCardText className="font-italic mb-1"><img
                         src="ope.jpg"
                         alt="Establishment User Logo"

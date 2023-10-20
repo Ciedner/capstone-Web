@@ -106,6 +106,11 @@ function TicketInfo() {
                         alt="Management Details"
                         style={{ width: '20px', marginRight: '10px'}}
                       />Management Details</Dropdown.Item>
+              <Dropdown.Item href="Profiles"><img
+                        src="pofile.jpg"
+                        alt="Management Details"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />View Profile</Dropdown.Item>
               <Dropdown.Item href="OperatorDashboard"><img
                         src="feedback.jpg"
                         alt="Parking Info"

@@ -191,6 +191,11 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
                         alt="Parking Info"
                         style={{ width: '20px', marginRight: '10px'}}
                       />Ticket Information</Dropdown.Item> 
+              <Dropdown.Item href="Profiles"><img
+                        src="pofile.jpg"
+                        alt="Management Details"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />View Profile</Dropdown.Item>
               <Dropdown.Item href="Tracks"><img
                         src="management.jpg"
                         alt="Management Details"

@@ -41,6 +41,10 @@ const Establishment = () => {
   const handleButtonClick = () => {
     navigate("/TicketInfo");
   };
+
+  const handleViewProfile = () => {
+    navigate("/Profiles");
+  };
   const handleAgentSchedule = () => {
     navigate("/AgentSchedule");
   };
@@ -165,6 +169,20 @@ const Establishment = () => {
                         style={{ width: '40px', marginRight: '30px'}}
                       /> 
                    Ticketing Information</MDBCardText>
+                  </MDBListGroupItem>
+                  <MDBListGroupItem style={listItemStyle}
+                    hover
+                    className="d-flex justify-content-between align-items-center p-3"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = listItemHoverStyle.backgroundColor)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "inherit")}
+                  >
+                    <MDBCardText onClick={() => handleViewProfile()} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+                        <img
+                        src="pofile.jpg"
+                        alt="Profile"
+                        style={{ width: '40px', marginRight: '30px'}}
+                      /> 
+                  View Profile</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem style={listItemStyle}
                     hover

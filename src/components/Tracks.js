@@ -126,6 +126,11 @@ const App = () => {
                         alt="Agent Register"
                         style={{ width: '20px', marginRight: '10px'}}
                       />Register Ticket Operator</Dropdown.Item>   
+                      <Dropdown.Item href="Profiles"><img
+                        src="pofile.jpg"
+                        alt="Management Details"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />View Profile</Dropdown.Item>
               <Dropdown.Item href="TicketInfo"><img
                         src="infoPark.png"
                         alt="Parking Info"
