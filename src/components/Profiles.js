@@ -22,8 +22,7 @@ export default function EditButton() {
   const { user } = useContext(UserContext);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user.managementName || ""); 
-  const [address, setAddress] = useState(user.address || ""); 
-  const [description, setDescription] = useState(""); 
+  const [address, setAddress] = useState(user.companyAddress  || ""); 
   const [companyContact, setCompanyContact] = useState(user.contact || ""); 
   const [companyEmail, setCompanyEmail] = useState(user.email || ""); 
   const [companyName, setCompanyName] = useState (user.management || "");
@@ -58,17 +57,41 @@ export default function EditButton() {
     fetchUserData();
   }, []); 
 
+  const updateUserData = async () => {
+    try {
+      if (auth.currentUser) {
+        const userId = auth.currentUser.uid;
+        const userDocRef = db.collection("establishments").doc(userId);
+
+        // Data to be updated or set
+        const updatedData = {
+          managementName: name,
+          address: address,
+          contact: companyContact,
+          email: companyEmail,
+        };
+
+        // Using set with { merge: true } will either update or create the document
+        await userDocRef.set(updatedData, { merge: true });
+
+        console.log("User data updated/created successfully!");
+      } else {
+        console.error("User not authenticated");
+      }
+    } catch (error) {
+      console.error("Error updating user data: ", error);
+    }
+};
+
   const toggleEditing = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleEditProfile = () => {
-    setIsEditing(true);
-  };
-
   const handleSaveProfile = () => {
     setIsEditing(false);
+    updateUserData();
   };
+  
 
   const styles = {
     welcomeMessage: {
@@ -179,8 +202,7 @@ export default function EditButton() {
                 <div className="mb-5" style={{fontFamily:'Georgina'}}>
                   {isEditing ? (
                     <div className="p-4" style={{ backgroundColor: '#f8f9fa', fontFamily:'Georgina'}}>
-                      <h4>Company's Description</h4>
-                      <input type="text" placeholder="Description"  onChange={(e) => setDescription(e.target.value)}/>
+                     
                     </div>
                   ) : (
                     <div className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
@@ -204,11 +226,6 @@ export default function EditButton() {
                         alt="Establishment User Logo"
                         style={{ width: '20px', marginRight: '10px'}}
                       />{companyContact}</MDBCardText>
-                      <MDBCardText className="font-italic mb-0"><img
-                        src="desc.png"
-                        alt="Establishment Description Logo"
-                        style={{ width: '20px', marginRight: '10px'}}
-                      />{description}</MDBCardText>
                     </div>
                   )}
                 </div>

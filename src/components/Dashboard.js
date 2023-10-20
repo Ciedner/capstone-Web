@@ -41,7 +41,7 @@ const Establishment = () => {
   const { user } = useContext(UserContext);
 
   const [name, setName] = useState(user.managementName || ""); 
-  const [address, setAddress] = useState(user.address || ""); 
+  const [address, setAddress] = useState(user.companyAddress || ""); 
 
   useEffect(() => {
     const fetchUserData = async () => {

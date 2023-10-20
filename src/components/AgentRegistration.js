@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { db, auth } from '../config/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { setDoc, collection, doc } from 'firebase/firestore';
+import { setDoc, collection, doc, getDoc } from 'firebase/firestore';
 import { useNavigate, Link } from 'react-router-dom';
 import { DropdownButton, Dropdown, Button } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
+import { useLocation } from 'react-router-dom';
+import UserContext from '../UserContext';
 
 function CreateAccount() {
+  const location = useLocation();
+  const { user } = useContext(UserContext);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
+  const [companyAddress, setCompanyAddress] = useState (user.companyAddress);
+  const [managementName, setManagementName] = useState (user.managementName);
+  const [companyContact, setCompanyContact ] = useState (user.contact); 
   const [selectedRadioOption, setSelectedRadioOption] = useState('');
 
   const styles = {
@@ -51,6 +58,9 @@ function CreateAccount() {
         phoneNumber,
         address,
         password,
+        managementName,
+        companyAddress,
+        companyContact,
         selectedRadioOption,
       });
 

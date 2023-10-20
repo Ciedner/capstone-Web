@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Create() {
   const [managementName, setManagementName] = useState('');
-  const [address, setAddress] = useState('');
+  const [companyAddress, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [numberOfParkingLots, setNumberOfParkingLots] = useState('');
@@ -21,12 +21,10 @@ function Create() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
-      // Storing the user's information in Firestore.
-      // Note: We're not storing the password, since Firebase Auth handles it securely.
+    
       await setDoc(doc(db, "establishments", user.uid), {
         email,
-        address,
+        companyAddress,
         contact,
         numberOfParkingLots,
         managementName,
@@ -46,7 +44,7 @@ function Create() {
       navigate("/");
     } catch (error) {
       console.error('Error creating account:', error);
-      alert(error.message); // Informing the user about the error.
+      alert(error.message);
     }
   };
 
@@ -134,7 +132,7 @@ function Create() {
             <input
               type="text"
               placeholder="Address"
-              value={address}
+              value={companyAddress}
               onChange={(e) => setAddress(e.target.value)}
               required
               style={inputStyle}

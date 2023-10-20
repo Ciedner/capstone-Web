@@ -28,7 +28,7 @@ export default function EditButton() {
   const [address, setAddress] = useState(user.address || ""); 
   const [email, setEmail] = useState(user.email || ""); 
   const [contactNumber, setContactNumber] = useState(user.phoneNumber || ""); 
-  const [companyName, setCompanyName] = useState(user.companyName || ""); 
+  const [companyName, setCompanyName] = useState(user.managementName || ""); 
   const [companyAddress, setCompanyAddress] = useState(user.companyAddress || ""); 
   const [companyContact, setCompanyContact] = useState(user.companyContact || ""); 
   const [companyEmail, setCompanyEmail] = useState(user.companyEmail || ""); 
@@ -50,7 +50,7 @@ export default function EditButton() {
             setAddress(userData.address || "");
             setEmail(userData.email || "");
             setContactNumber(userData.contactNumber || "");
-            setCompanyName(userData.companyName || "");
+            setCompanyName(userData.managementName || "");
             setCompanyAddress(userData.companyAddress || "");
             setCompanyContact(userData.companyContact || "");
             setCompanyEmail(userData.companyEmail || "");
@@ -166,12 +166,11 @@ export default function EditButton() {
               <MDBCardBody className="text-black p-4" style={{fontFamily:'Georgina',}}>
                 <div className="mb-5">
                   {isEditing ? (
-                    <div className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                    <div className="p-4" style={{ backgroundColor: '#f8f9fa' } }>
                       <h4>Company's Information</h4>
-                      <input type="text" placeholder="Name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} style={{ marginRight:'5px', marginBottom:'5px'}}/>
-                      <input type="text" placeholder="Location" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} style={{ marginRight:'5px'}}/>
-                      <input type="text" placeholder="Contact Number" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} style={{ marginRight:'5px'}}/>
-                      <input type="text" placeholder="Email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)}/>
+                      <input type="text" readOnly placeholder="Name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} style={{ marginRight:'5px', marginBottom:'5px'}}/>
+                      <input type="text" readOnly placeholder="Location" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} style={{ marginRight:'5px'}}/>
+                      <input type="text" readOnly placeholder="Contact Number" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} style={{ marginRight:'5px'}}/>
                     </div>
                   ) : (
                     <div className="p-4" style={{ backgroundColor: '#f8f9fa', fontFamily:'Georgina' }}>
@@ -216,12 +215,7 @@ export default function EditButton() {
                         style={{ width: '20px', marginRight: '10px'}}
                       />
                         {companyAddress}</MDBCardText>
-                      <MDBCardText className="font-italic mb-1"> <img
-                        src="ope.jpg"
-                        alt="Operator Email Logo"
-                        style={{ width: '20px', marginRight: '10px'}}
-                      />
-                        {companyEmail}</MDBCardText>
+                    
                       <MDBCardText className="font-italic mb-0"> <img
                         src="opcontact.png"
                         alt="Operator Contact Logo"
