@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext, useState, useEffect}from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import { DropdownButton, Dropdown, Button } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
@@ -18,6 +18,8 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faChartColumn, faAddressCard, faPlus, faCar, faUser, faCoins, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
+import UserContext from '../UserContext';
+import {auth, db} from "../config/firebase"
 
 const listItemStyle = {
   display: "flex",
@@ -36,6 +38,37 @@ const listItemHoverStyle = {
 const Establishment = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useContext(UserContext);
+
+  const [name, setName] = useState(user.managementName || ""); 
+  const [address, setAddress] = useState(user.address || ""); 
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Check if user is logged in
+        if (auth.currentUser) {
+          const userId = auth.currentUser.uid;
+
+          // Fetch user data from Firestore
+          const doc = await db.collection("establishments").doc(userId).get();
+
+          if (doc.exists) {
+            const userData = doc.data();
+            
+            setName(userData.managementName || "");
+            setAddress(userData.address || "");
+          } else {
+            console.log("No user data found!");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    fetchUserData();
+  }, []); 
   const establishmentData = location.state; 
 
   const handleButtonClick = () => {
@@ -116,10 +149,10 @@ const Establishment = () => {
                   fluid
                 />
                <p className="text-muted mb-1" style={{ fontFamily: 'Georgina', marginTop: '15px' }}>
-                  {establishmentData && establishmentData.managementName}
+                  {name}
                 </p>
                 <p className="text-muted mb-4" style={{ fontFamily: 'Georgina' }}>
-                  {establishmentData && establishmentData.address}
+                  {address}
                 </p>
                 <Button onClick={handleProfile} style={{fontFamily:'Georgina'}}>View Profile</Button>
               </MDBCardBody>
