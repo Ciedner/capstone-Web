@@ -159,17 +159,17 @@ function OperatorDashboard() {
                 title={<FaUserCircle style={styles.icon} />}
                 id="dropdown-menu"
               >
+                 <Dropdown.Item href="ViewSpace"><img
+                        src="slot1.jpeg"
+                        alt="Operator Parking Slot Logo"
+                        style={{ width: '20px', marginRight: '10px'}}
+                      />Dashboard</Dropdown.Item>
                 <Dropdown.Item href="OperatorProfile">
                 <img
                         src="opname.jpg"
                         alt="Operator Profile Logo"
                         style={{ width: '20px', marginRight: '10px'}}
                       />Profile</Dropdown.Item>
-                <Dropdown.Item href="ViewSpace"><img
-                        src="slot1.jpeg"
-                        alt="Operator Parking Slot Logo"
-                        style={{ width: '20px', marginRight: '10px'}}
-                      />Dashboard</Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item href="/"><img
                         src="logout.png"
