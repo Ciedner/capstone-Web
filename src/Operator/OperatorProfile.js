@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import {
@@ -18,14 +19,60 @@ import {auth, db} from "../config/firebase"
 
 export default function EditButton() {
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("Richard Macol"); 
-  const [location, setLocation] = useState("Carmen, Cebu"); 
-  const [email, setEmail] = useState("richardm@gmail.com"); 
-  const [contactNumber, setContactNumber] = useState("01234567890"); 
-  const [companyName, setCompanyName] = useState("Marky Parking Establishment"); 
-  const [companyAddress, setCompanyAddress] = useState("Talamban, Cebu City"); 
-  const [companyContact, setCompanyContact] = useState("091234567890"); 
-  const [companyEmail, setCompanyEmail] = useState("markiesparkinglot@gmail.com"); 
+  const location = useLocation();
+  const user = location.state || {
+    name: '',
+    address: '',
+    email: '',
+    contactNumber: '',
+    companyName: '',
+    companyAddress: '',
+    companyContact: '',
+    companyEmail: ''
+  };
+  const [name, setName] = useState(user.firstName || ""); 
+  const [lastName, setLastName] = useState(user.lastName || ""); 
+  const fullName = `${name} ${lastName}`;
+  const [address, setAddress] = useState(user.address || ""); 
+  const [email, setEmail] = useState(user.email || ""); 
+  const [contactNumber, setContactNumber] = useState(user.phoneNumber || ""); 
+  const [companyName, setCompanyName] = useState(user.companyName || ""); 
+  const [companyAddress, setCompanyAddress] = useState(user.companyAddress || ""); 
+  const [companyContact, setCompanyContact] = useState(user.companyContact || ""); 
+  const [companyEmail, setCompanyEmail] = useState(user.companyEmail || ""); 
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Check if user is logged in
+        if (auth.currentUser) {
+          const userId = auth.currentUser.uid;
+
+          // Fetch user data from Firestore
+          const doc = await db.collection("agents").doc(userId).get();
+
+          if (doc.exists) {
+            const userData = doc.data();
+            
+            setName(userData.name || "");
+            setAddress(userData.address || "");
+            setEmail(userData.email || "");
+            setContactNumber(userData.contactNumber || "");
+            setCompanyName(userData.companyName || "");
+            setCompanyAddress(userData.companyAddress || "");
+            setCompanyContact(userData.companyContact || "");
+            setCompanyEmail(userData.companyEmail || "");
+          } else {
+            console.log("No user data found!");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    fetchUserData();
+  }, []); 
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
@@ -101,14 +148,14 @@ export default function EditButton() {
                   {isEditing ? (
                     <>
                       <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={{marginRight:'5px', marginBottom:'5px'}} />
-                      <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
+                      <input type="text" placeholder="Location" value={address} onChange={(e) => setAddress(e.target.value)} />
                       <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{marginRight:'5px'}} />
                       <input type="text" placeholder="Contact Number" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} />
                     </>
                   ) : (
                     <>
-                      <MDBTypography tag="h5">{name}</MDBTypography>
-                      <MDBCardText>{location}</MDBCardText>
+                      <MDBTypography tag="h5">{fullName}</MDBTypography>
+                      <MDBCardText>{address}</MDBCardText>
                       <MDBCardText>{email}</MDBCardText>
                       <MDBCardText>{contactNumber}</MDBCardText>
                     </>
@@ -148,7 +195,7 @@ export default function EditButton() {
                         alt="Operator Address Logo"
                         style={{ width: '20px', marginRight: '10px'}}
                       />
-                        {location}</MDBCardText>
+                        {address}</MDBCardText>
                       <MDBCardText className="font-italic mb-1"> <img
                         src="ope.jpg"
                         alt="Operator Email Logo"
