@@ -34,48 +34,39 @@ function Login() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      if (!userCredential || !userCredential.user) {
-        console.error('User not found in userCredential');
-        return;
-      }
-  
-      const { user } = userCredential;
-      console.log('Authentication successful for UID:', user.uid);
-  
-      let collectionName = '';
-  
-      if (userType === 'agents') {
-        collectionName = 'agents';
-      } else if (userType === 'establishment') {
-        collectionName = 'establishments';
-      } else {
-        alert('Please select a valid account type.');
-        return;
-      }
-  
-      const collectionRef = query(collection(db, collectionName), where('email', '==', email));
-      const querySnapshot = await getDocs(collectionRef);
-      
-      if (!querySnapshot.empty) {
-        const userData = querySnapshot.docs[0].data();
-  
-        // Ensure that the password from Firestore matches the provided password
-        if (userData.password === password) {
-          // Set the userData in the context and localStorage
+      const user = userCredential.user;
+
+      if (user) {
+        let collectionName = '';
+
+        if (userType === 'agents') {
+          collectionName = 'agents';
+        } else if (userType === 'establishment') {
+          collectionName = 'establishments';
+        } else {
+          alert('Please select a valid account type.');
+          return;
+        }
+
+        const collectionRef = query(collection(db, collectionName), where('email', '==', email));
+        const querySnapshot = await getDocs(collectionRef);
+
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
           setUser(userData);
-  
+
           alert('Login successful!');
-  
+
           if (userType === 'agents') {
-            navigate('/ViewSpace', { state: userData });
+            navigate('/ViewSpace');
           } else {
-            navigate('/Dashboard', { state: userData });
+            navigate('/Dashboard');
           }
         } else {
-          alert('Invalid login credentials. Please try again.');
+          alert('User not found. Please try again.');
         }
       } else {
         alert('User not found. Please try again.');
@@ -85,6 +76,7 @@ function Login() {
       alert('Error logging in. Please try again.');
     }
   };
+
 
 
   const containerStyle = {

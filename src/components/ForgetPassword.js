@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { auth, db } from '../config/firebase'; 
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 function ForgotPassword() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -9,32 +12,28 @@ function ForgotPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      await auth.sendPasswordResetEmail(email);
-
-      const agentDocRef = db.collection('agents').doc(email);
-      const agentDoc = await agentDocRef.get();
-
-      const establishmentDocRef = db.collection('establishments').doc(email);
-      const establishmentDoc = await establishmentDocRef.get();
-
-      if (agentDoc.exists || establishmentDoc.exists) {
-        setUserEmail(email);
-      } else {
-        setUserEmail('');
-        setMessage('User with this email does not exist.');
-      }
-
+      await sendPasswordResetEmail(auth, email);
       setMessage('Password reset email sent. Check your inbox.');
     } catch (error) {
-      console.error('Error sending password reset email:', error);
+      console.error('Error sending password reset email:', error.message, 'Code:', error.code);
+      handleFirebaseError(error);
+    }
+  };
+  
 
-      if (error.code === 'auth/invalid-email') {
+  const handleFirebaseError = (error) => {
+    switch (error.code) {
+      case 'auth/invalid-email':
         setMessage('Invalid email format.');
-      } else {
+        break;
+      case 'auth/user-not-found':
+        setMessage('User with this email does not exist.');
+        break;
+      default:
         setMessage('An error occurred. Please try again later.');
-      }
+        break;
     }
   };
 
@@ -44,13 +43,29 @@ function ForgotPassword() {
     try {
       const user = auth.currentUser;
       await user.updatePassword(newPassword);
+
+      // Update Firestore to log the action (not the password)
+      const userDocRef = db.collection('agents').doc(user.email);
+      const establishmentDocRef = db.collection('establishments').doc(user.email);
+      await userDocRef.update({
+          lastPasswordUpdate: new Date()
+      });
+
+      await establishmentDocRef.update({
+        lastPasswordUpdate: new Date()
+    });
       setMessage('Password updated successfully.');
       setNewPassword('');
     } catch (error) {
       console.error('Error updating password:', error);
       setMessage('An error occurred. Please try again later.');
     }
-  };
+};
+
+const handleLogin = () => {
+  navigate ("/");
+};
+
 
   const containerStyle = {
     display: 'flex',
@@ -86,7 +101,7 @@ function ForgotPassword() {
   return (
     <div style={containerStyle}>
       <div style={navbarStyle}>
-        <div style={logoStyle}>SpotWise Parking Management</div>
+        <div style={logoStyle} onClick={handleLogin}>SpotWise Parking Management</div>
       </div>
       <div style={formContainerStyle}>
       <h2 style={{textAlign:'center', marginBottom:'30px', fontSize:'20px'}}>Forgot Password</h2>
