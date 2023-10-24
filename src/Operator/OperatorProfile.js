@@ -16,6 +16,7 @@ import {
 } from 'mdb-react-ui-kit';
 import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
+import { updateDoc, doc } from 'firebase/firestore';
 
 export default function EditButton() {
   const [isEditing, setIsEditing] = useState(false);
@@ -66,6 +67,30 @@ export default function EditButton() {
     fetchUserData();
   }, []); 
 
+  const updateUserData = async () => {
+    try {
+      if (auth.currentUser) {
+        const userId = auth.currentUser.uid;
+        const userDocRef = doc(db, 'agents', userId); 
+
+        const updatedData = {
+          firstName:name,
+          address: address,
+          email: email,
+          phoneNumber:contactNumber,
+        };
+
+        await updateDoc(userDocRef, updatedData);
+
+        console.log("User data updated/created successfully!");
+      } else {
+        console.error("User not authenticated");
+      }
+    } catch (error) {
+      console.error("Error updating user data: ", error);
+    }
+};
+
   const toggleEditing = () => {
     setIsEditing(!isEditing);
   };
@@ -75,8 +100,10 @@ export default function EditButton() {
   };
 
   const handleSaveProfile = () => {
+    console.log(auth.currentUser);
     setIsEditing(false);
-  };
+    updateUserData();
+};
 
   const styles = {
     welcomeMessage: {

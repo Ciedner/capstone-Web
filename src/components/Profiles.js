@@ -16,6 +16,7 @@ import {
 } from 'mdb-react-ui-kit';
 import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
+import { updateDoc, doc} from 'firebase/firestore';
 
 export default function EditButton() {
   const location = useLocation();
@@ -61,7 +62,7 @@ export default function EditButton() {
     try {
       if (auth.currentUser) {
         const userId = auth.currentUser.uid;
-        const userDocRef = db.collection("establishments").doc(userId);
+        const userDocRef = doc(db, 'establishments', userId); 
 
         // Data to be updated or set
         const updatedData = {
@@ -72,7 +73,7 @@ export default function EditButton() {
         };
 
         // Using set with { merge: true } will either update or create the document
-        await userDocRef.set(updatedData, { merge: true });
+        await updateDoc(userDocRef, updatedData);
 
         console.log("User data updated/created successfully!");
       } else {
@@ -88,9 +89,10 @@ export default function EditButton() {
   };
 
   const handleSaveProfile = () => {
+    console.log(auth.currentUser);
     setIsEditing(false);
     updateUserData();
-  };
+};
   
 
   const styles = {

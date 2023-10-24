@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import UserContext from '../UserContext';
+import { Dropdown } from 'bootstrap';
 
 function Login() {
   const { setUser } = useContext(UserContext);
@@ -198,21 +199,13 @@ function Login() {
             </span>
           )}
         </div>
-          <button type="submit" style={buttonStyle}><img
-                        src="login.png"
-                        alt="Log in Logo"
-                        style={{ width: '20px', marginRight: '10px'}}
-                      />
+          <button type="submit" style={buttonStyle}>
             Log In
           </button>
           <p style={{ marginTop: '10px', fontSize: '14px' }}>
            <a href="/forget">Forget Password?</a>
           </p>
-          <button type="submit" style={buttonStyle2} onClick={handleCreate}><img
-                        src="create1.png"
-                        alt="Create Account Logo"
-                        style={{width: '20px', marginRight: '10px'}}
-                      />
+          <button type="submit" style={buttonStyle2} onClick={handleCreate}>
             Create Account
           </button>
         </form>
