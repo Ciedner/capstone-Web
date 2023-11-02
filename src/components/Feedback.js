@@ -3,6 +3,9 @@ import { fetchAllFeedback, fetchFeedbackById } from './FeedbackAPI.js';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
 import { useLocation, Link } from "react-router-dom";
+import { auth, db } from "../config/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 const FeedbackPage = () => {
   const [feedbackList, setFeedbackList] = useState([]);
@@ -11,18 +14,45 @@ const FeedbackPage = () => {
   const [clickedFeedbackIds, setClickedFeedbackIds] = useState([]);
   const itemsPerPage = 5;
 
+  const [managementName, setManagementName] = useState(null);
+
   useEffect(() => {
-    fetchAllFeedback()
-      .then((data) => {
-        setFeedbackList(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching feedback:', error);
-      });
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
+        const userDocRef = doc(db, "establishments", uid);
+        getDoc(userDocRef).then((docSnapshot) => {
+          if (docSnapshot.exists()) {
+            setManagementName(docSnapshot.data().managementName);
+          } else {
+           
+            console.log("No such document!");
+          }
+        });
+      } else {
+       
+        setManagementName(null);
+      }
+    });
+  
+    return unsubscribe; 
   }, []);
 
+  useEffect(() => {
+    if (managementName) {
+      fetchAllFeedback()
+        .then((data) => {
+          const relevantFeedback = data.filter((feedback) => feedback.managementName === managementName);
+          setFeedbackList(relevantFeedback);
+        })
+        .catch((error) => {
+          console.error('Error fetching feedback:', error);
+        });
+    }
+  }, [managementName]);
+
   const handleFeedbackClick = (id) => {
-    console.log(`Feedback ID clicked: ${id}`); // This line will confirm if the function gets called with the right ID
+    console.log(`Feedback ID clicked: ${id}`); 
     fetchFeedbackById(id)
       .then((data) => {
         setSelectedFeedback(data);
