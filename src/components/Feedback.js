@@ -22,13 +22,10 @@ const FeedbackPage = () => {
   }, []);
 
   const handleFeedbackClick = (id) => {
+    console.log(`Feedback ID clicked: ${id}`); // This line will confirm if the function gets called with the right ID
     fetchFeedbackById(id)
       .then((data) => {
         setSelectedFeedback(data);
-        const clickedIds = JSON.parse(localStorage.getItem('clickedFeedbackIds')) || [];
-        const updatedClickedIds = [...clickedIds, id];
-        localStorage.setItem('clickedFeedbackIds', JSON.stringify(updatedClickedIds));
-        setClickedFeedbackIds(updatedClickedIds);
       })
       .catch((error) => {
         console.error('Error fetching feedback:', error);
@@ -196,12 +193,12 @@ const FeedbackPage = () => {
 
               return (
                 <li
-                  key={feedback.id}
-                  onClick={() => handleFeedbackClick(feedback.id)}
-                  style={listItemStyle}
-                >
-                  {feedback.customerName}
-                </li>
+                key={feedback.id}
+                onClick={() => handleFeedbackClick(feedback.id)} 
+                style={listItemStyle}
+              >
+                {feedback.email}
+              </li>
               );
             })}
           </ul>
@@ -219,22 +216,25 @@ const FeedbackPage = () => {
           </div>
         </div>
         <div style={{ ...styles.feedbackContainer, flex: 1, marginLeft: '20px' }}> 
-          {selectedFeedback ? (
-            <div>
-              <div style={navbarStyle}>
-                <div style={logoStyle}> FEEDBACK DETAILS </div>
-              </div>
-              <div style={para}>
-                <p>Customer Name: {selectedFeedback.customerName}</p>
-                <p>Email: {selectedFeedback.email}</p>
-                <p>Feedback Type: {selectedFeedback.feedbackType}</p>
-                <p>Content: {selectedFeedback.content}</p>
-              </div>
-            </div>
-          ) : (
-            <p style={{fontFamily:'Georgina', textAlign:'center'}}>Select a feedback entry to view details.</p>
-          )}
-        </div>
+  {selectedFeedback ? (
+    <div>
+      <div style={navbarStyle}>
+        <div style={logoStyle}> FEEDBACK DETAILS </div>
+      </div>
+      <div style={para}>
+        <p>Company Address: {selectedFeedback.companyAddress}</p>
+        <p>Email: {selectedFeedback.email}</p>
+        <p>Created at: {new Date(selectedFeedback.createdAt.seconds * 1000).toLocaleDateString()}</p>
+        <p>Message: {selectedFeedback.message}</p>
+        <button onClick={() => handleDeleteFeedback(selectedFeedback.id)}>
+          Delete Feedback
+        </button>
+      </div>
+    </div>
+  ) : (
+    <p style={{ fontFamily: 'Georgina', textAlign: 'center' }}>Select a feedback entry to view details.</p>
+  )}
+</div>
       </div>
     </div>
     </div>
