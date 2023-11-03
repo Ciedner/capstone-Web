@@ -44,8 +44,9 @@ const Establishment = () => {
   const [parkingLogs, setParkingLogs] = useState([]);
   const [managementName, setManagementName] = useState(user.managementName || ""); 
   const [address, setAddress] = useState(user.companyAddress || ""); 
-
- 
+  const [totalUsers, setTotalUsers] = useState (0); 
+  const parkingPay = user.parkingPay;
+  const totalRevenues = totalUsers * parkingPay;
   const updateInterval = 10000; // 10 seconds for example
 
   useEffect(() => {
@@ -85,6 +86,35 @@ const Establishment = () => {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchParkingLogs = async () => {
+      try {
+        // Assuming you have a way to get the current user's managementName
+        const currentUserManagementName = user.managementName;
+        const logsCollectionRef = collection(db, 'logs');
+        // Create a query against the collection.
+        const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
+  
+        const querySnapshot = await getDocs(q);
+        const logs = [];
+        querySnapshot.forEach((doc) => {
+          logs.push({ id: doc.id, ...doc.data() });
+        });
+        setParkingLogs(logs);  // Set the fetched logs into the state
+        const totalUser = logs.length;
+        setTotalUsers(totalUser);
+      } catch (error) {
+        console.error("Error fetching parking logs: ", error);
+      }
+    };
+
+  
+    // Initial fetch
+    if (user && user.managementName) {
+      fetchParkingLogs();
+    }
+  }, [user, db]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -307,7 +337,7 @@ const Establishment = () => {
           <Card>
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}><FontAwesomeIcon icon={faCoins} color="red"/> Total Revenues</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>0</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{totalRevenues}</Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -315,7 +345,7 @@ const Establishment = () => {
           <Card>
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}><FontAwesomeIcon icon={faUser} color="blue" /> Total Users today</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>0 </Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{totalUsers} </Card.Text>
             </Card.Body>
           </Card>
         </div>
