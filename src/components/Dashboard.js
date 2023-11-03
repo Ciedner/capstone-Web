@@ -20,6 +20,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faChartColumn, faAddressCard, faPlus, faCar, faUser, faCoins, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
+import { getDocs, collection } from "firebase/firestore";
+
 
 const listItemStyle = {
   display: "flex",
@@ -39,9 +41,43 @@ const Establishment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(UserContext);
-
+  const [parkingLogs, setParkingLogs] = useState([]);
   const [name, setName] = useState(user.managementName || ""); 
   const [address, setAddress] = useState(user.companyAddress || ""); 
+
+ 
+  const updateInterval = 10000; // 10 seconds for example
+
+  useEffect(() => {
+    let interval;
+  
+    const fetchParkingLogs = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'logs'));
+        const logs = [];
+        querySnapshot.forEach((doc) => {
+          logs.push({ id: doc.id, ...doc.data() });
+        });
+        // Sort by timeIn in descending order if not already sorted and take the first three
+        const sortedLogs = logs.sort((a, b) => new Date (b.timeIn) - new Date (a.timeIn)).slice(0, 3);
+        console.log('Logs fetched:', sortedLogs); // Debug: Log the fetched data
+        setParkingLogs(sortedLogs);
+      } catch (error) {
+        console.error("Error fetching parking logs: ", error);
+      }
+    };
+  
+    // Initial fetch
+    fetchParkingLogs();
+    
+    // Set an interval to fetch logs regularly
+    interval = setInterval(fetchParkingLogs, updateInterval);
+  
+    // Clear interval on cleanup
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -288,55 +324,25 @@ const Establishment = () => {
             <MDBCard style={{marginTop:"50px", backgroundColor:"#bfd2d9", }}>
               <MDBCardBody>
               <MDBCardText className="mb-4"  style={{fontFamily:"Courier New"}}> <FontAwesomeIcon icon={faUser} /> <span className="text-primary font-italic me-1"> Recent Parking User</span></MDBCardText>
-                <MDBRow>
-                <MDBCol md="4">
-                    <MDBCard style={{backgroundColor:"#bfd2d9"}}>
-                      <img
-                        src="https://a57.foxnews.com/static.foxbusiness.com/foxbusiness.com/content/uploads/2023/06/931/523/Musk.jpg?ve=1&tl=1"
-                        className="img-fluid"
-                        alt="img"
-                      />
-                      <MDBCardBody style={{fontFamily:"Courier New", fontSize:"12px"}}>    
-                        <MDBCardText>Name: Elon Musk </MDBCardText>
-                        <MDBCardText>Vehicle: Tesla</MDBCardText>
-                        <MDBCardText>Vehicle Plate: DEF - T3F</MDBCardText>
-                        <MDBCardText>Time in: 10:10 AM </MDBCardText>
-                        <MDBCardText>Time out: 3:00 PM</MDBCardText>
-                      </MDBCardBody>
-                    </MDBCard>
-                </MDBCol>
-                <MDBCol md="4">
-                    <MDBCard style={{backgroundColor:"#bfd2d9"}}>
-                      <img
-                        src="https://mmajunkie.usatoday.com/wp-content/uploads/sites/91/2021/07/dustin-poirier-conor-mcgregor-ufc-264-getty-5.jpg?w=1000&h=600&crop=1"
-                        className="img-fluid"
-                        alt="img"
-                      />
-                       <MDBCardBody style={{fontFamily:"Courier New", fontSize:"12px"}}>    
-                        <MDBCardText>Name: Conor McGregor </MDBCardText>
-                        <MDBCardText>Vehicle: Bugatti</MDBCardText>
-                        <MDBCardText>Vehicle Plate: GHI - X6B</MDBCardText>
-                        <MDBCardText>Time in: 8:45 AM </MDBCardText>
-                        <MDBCardText>Time out: 11:00 AM</MDBCardText>
-                      </MDBCardBody>
-                    </MDBCard>
-                </MDBCol>
-                <MDBCol md="4">
-                    <MDBCard style={{backgroundColor:"#bfd2d9"}}>
-                      <img
-                        src="https://www.toolshero.com/wp-content/uploads/2020/12/mark-zuckerberg-toolshero.jpg"
-                        className="img-fluid"
-                        alt="img"
-                      />
-                      <MDBCardBody style={{fontFamily:"Courier New", fontSize:"12px"}}>    
-                        <MDBCardText>Name: Mark Zuckerberg </MDBCardText>
-                        <MDBCardText>Vehicle: BMW 600</MDBCardText>
-                        <MDBCardText>Vehicle Plate: ABC - U2F</MDBCardText>
-                        <MDBCardText>Time in: 9:00 AM </MDBCardText>
-                        <MDBCardText>Time out: 1:00 PM</MDBCardText>
-                      </MDBCardBody>
-                    </MDBCard>
-                </MDBCol>
+              <MDBRow>
+                  {parkingLogs.map((log) => (
+                    <MDBCol md="4" key={log.id}>
+                      <MDBCard style={{ backgroundColor: "#bfd2d9" }}>
+                        <img
+                          src="ppic.jpg"
+                          className="img-fluid"
+                          alt="img"
+                        />
+                        <MDBCardBody style={{ fontFamily: "Times New Roman", fontSize: "15px" }}>
+                          <MDBCardText>Email: {log.email} </MDBCardText>
+                          <MDBCardText>Vehicle: {log.car}</MDBCardText>
+                          <MDBCardText>Vehicle Plate: {log.carPlateNumber}</MDBCardText>
+                          <MDBCardText style={{color:"green"}}>Time in: {log.timeIn.toDate().toLocaleString()}</MDBCardText>
+                          <MDBCardText style={{color: "red"}}>Time out: {log.timeOut.toDate().toLocaleString()}</MDBCardText>
+                        </MDBCardBody>
+                      </MDBCard>
+                    </MDBCol>
+                  ))}
                 </MDBRow>
               </MDBCardBody>
             </MDBCard>
