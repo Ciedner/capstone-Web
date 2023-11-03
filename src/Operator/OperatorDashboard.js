@@ -20,14 +20,14 @@ function OperatorDashboard() {
   const [data, setData] = useState([]);
 
   const [totalUsers, setTotalUsers] = useState(0);
-  const [totalRevenues, setTotalRevenues] = useState(0);
+  
   const navigate = useNavigate();
   const location = useLocation();
 
   const [parkingPay, setParkingPay] = useState(0);
   const [numberOfParkingLots, setNumberOfParkingLots] = useState(0);
   const [parkingLogs, setParkingLogs] = useState([]);
-
+  const totalRevenues = totalUsers * parkingPay;
   const styles = {
     welcomeMessage: {
       position: "absolute",
@@ -85,12 +85,14 @@ function OperatorDashboard() {
         querySnapshot.forEach((doc) => {
           logs.push({ id: doc.id, ...doc.data() });
         });
-  
         setParkingLogs(logs);  // Set the fetched logs into the state
+        const totalUser = logs.length;
+        setTotalUsers(totalUser);
       } catch (error) {
         console.error("Error fetching parking logs: ", error);
       }
     };
+
   
     // Initial fetch
     if (user && user.managementName) {
