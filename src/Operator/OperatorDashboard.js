@@ -193,8 +193,8 @@ function OperatorDashboard() {
                   <td>{log.name}</td>
                   <td>{log.car}</td>
                   <td>{log.carPlateNumber}</td>
-                  <td>{log.timeIn.toDate().toLocaleString()}</td>
-                  <td>{log.timeOut.toDate().toLocaleString()}</td>
+                  <td>{new Date(log.timeIn.seconds * 1000).toLocaleString()}</td>
+                  <td>{new Date(log.timeIn.seconds * 1000).toLocaleString()}</td>
                   <td style={{ color: log.paymentStatusColor }}>{log.paymentStatus}</td>
                 </tr>
               ))}
