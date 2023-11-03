@@ -335,6 +335,7 @@ const Establishment = () => {
                         />
                         <MDBCardBody style={{ fontFamily: "Times New Roman", fontSize: "15px" }}>
                           <MDBCardText>Email: {log.email} </MDBCardText>
+                          <MDBCardText>Address: {log.address}</MDBCardText>
                           <MDBCardText>Vehicle: {log.car}</MDBCardText>
                           <MDBCardText>Vehicle Plate: {log.carPlateNumber}</MDBCardText>
                           <MDBCardText style={{color:"green"}}>Time in: {log.timeIn.toDate().toLocaleString()}</MDBCardText>
