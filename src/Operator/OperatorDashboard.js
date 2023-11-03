@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FaUserCircle } from "react-icons/fa";
 import { faCar, faCoins, faUser, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import {db} from "../config/firebase"
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import {doc, getDoc, collection, query, where, getDocs} from 'firebase/firestore';
 import UserContext from '../UserContext';
 
 function OperatorDashboard() {
@@ -20,10 +20,13 @@ function OperatorDashboard() {
   const [data, setData] = useState([]);
 
   const [totalUsers, setTotalUsers] = useState(0);
-    const [fixedPrice, setFixedPrice] = useState(30);
-    const [totalRevenues, setTotalRevenues] = useState(0);
+  const [totalRevenues, setTotalRevenues] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [parkingPay, setParkingPay] = useState(0);
+  const [numberOfParkingLots, setNumberOfParkingLots] = useState(0);
+  const [parkingLogs, setParkingLogs] = useState([]);
 
   const styles = {
     welcomeMessage: {
@@ -39,6 +42,62 @@ function OperatorDashboard() {
       marginRight: "5px",
     },
   };
+
+  useEffect(() => {
+    // Async function to fetch the establishment's data
+    const fetchEstablishmentData = async () => {
+      try {
+        // Query the 'establishments' collection for documents where 'managementName' matches the agent's 'managementName'
+        const q = query(collection(db, 'establishments'), where('managementName', '==', user.managementName));
+        const querySnapshot = await getDocs(q);
+  
+        console.log(`Found ${querySnapshot.docs.length} documents`); // Debug how many documents were found
+  
+        if (!querySnapshot.empty) {
+          const establishmentData = querySnapshot.docs[0].data(); // Get the first document's data
+          console.log('Establishment Data:', establishmentData); // Log the data to see what you received
+          setParkingPay(establishmentData.parkingPay);
+          setNumberOfParkingLots(establishmentData.numberOfParkingLots);
+        } else {
+          console.log('No matching establishment found!');
+        }
+      } catch (error) {
+        console.error('Error fetching establishment data:', error);
+      }
+    };
+  
+    if (user && user.managementName) {
+      fetchEstablishmentData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchParkingLogs = async () => {
+      try {
+        // Assuming you have a way to get the current user's managementName
+        const currentUserManagementName = user.managementName;
+        const logsCollectionRef = collection(db, 'logs');
+        // Create a query against the collection.
+        const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
+  
+        const querySnapshot = await getDocs(q);
+        const logs = [];
+        querySnapshot.forEach((doc) => {
+          logs.push({ id: doc.id, ...doc.data() });
+        });
+  
+        setParkingLogs(logs);  // Set the fetched logs into the state
+      } catch (error) {
+        console.error("Error fetching parking logs: ", error);
+      }
+    };
+  
+    // Initial fetch
+    if (user && user.managementName) {
+      fetchParkingLogs();
+    }
+  }, [user, db]);
+
   
   
   return (
@@ -85,7 +144,7 @@ function OperatorDashboard() {
           <Card> 
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}> <FontAwesomeIcon icon={faCar} color="green"/> Parking Availability</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{user.numberOfParkingLogs}</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{numberOfParkingLots}</Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -109,7 +168,7 @@ function OperatorDashboard() {
           <Card>
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}><FontAwesomeIcon icon={faFileInvoiceDollar} color="orange"/> Parking Payment</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{fixedPrice}</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{parkingPay}</Card.Text>
             </Card.Body>
           </Card>
         </div>  
@@ -118,7 +177,6 @@ function OperatorDashboard() {
           <Table responsive>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Vehicle</th>
                 <th>Plate No</th>
@@ -128,15 +186,14 @@ function OperatorDashboard() {
               </tr>
             </thead>
             <tbody>
-              {data.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.id}</td>
-                  <td>{row.name}</td>
-                  <td>{row.vehicle}</td>
-                  <td>{row.plateNo}</td>
-                  <td>{row.timeIn}</td>
-                  <td>{row.timeOut}</td>
-                  <td style={{ color: row.paymentStatusColor }}>{row.paymentStatus}</td>
+              {parkingLogs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.name}</td>
+                  <td>{log.car}</td>
+                  <td>{log.carPlateNumber}</td>
+                  <td>{log.timeIn.toDate().toLocaleString()}</td>
+                  <td>{log.timeOut.toDate().toLocaleString()}</td>
+                  <td style={{ color: log.paymentStatusColor }}>{log.paymentStatus}</td>
                 </tr>
               ))}
             </tbody>

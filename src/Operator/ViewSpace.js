@@ -99,6 +99,7 @@ const ParkingSlot = () => {
   const [managementName, setManagementName] = useState (user.managementName || "");
   const fullName = `${agent} ${agentL}`;
   const [errorMessage, setErrorMessage] = useState("");
+  
   const addToLogs = async (userDetails) => {
     try {
       const logsCollectionRef = collection(db, 'logs'); 
@@ -147,6 +148,7 @@ const ParkingSlot = () => {
       gender: userDetails?.gender || "",
       age: userDetails?.age || "",
       address: userDetails?.address || "",
+      name: userDetails?.name || "",
       timestamp,
     };
   

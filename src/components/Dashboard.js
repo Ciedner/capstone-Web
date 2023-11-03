@@ -42,7 +42,7 @@ const Establishment = () => {
   const location = useLocation();
   const { user } = useContext(UserContext);
   const [parkingLogs, setParkingLogs] = useState([]);
-  const [name, setName] = useState(user.managementName || ""); 
+  const [managementName, setManagementName] = useState(user.managementName || ""); 
   const [address, setAddress] = useState(user.companyAddress || ""); 
 
  
@@ -99,7 +99,7 @@ const Establishment = () => {
           if (doc.exists) {
             const userData = doc.data();
             
-            setName(userData.managementName || "");
+            setManagementName(userData.managementName || "");
             setAddress(userData.address || "");
           } else {
             console.log("No user data found!");
@@ -192,7 +192,7 @@ const Establishment = () => {
                   fluid
                 />
                <p className="text-muted mb-1" style={{ fontFamily: 'Georgina', marginTop: '15px' }}>
-                  {name}
+                  {managementName}
                 </p>
                 <p className="text-muted mb-4" style={{ fontFamily: 'Georgina' }}>
                   {address}
@@ -341,7 +341,7 @@ const Establishment = () => {
                           alt="img"
                         />
                         <MDBCardBody style={{ fontFamily: "Times New Roman", fontSize: "15px" }}>
-                          <MDBCardText>Email: {log.email} </MDBCardText>
+                          <MDBCardText>Name: {log.name} </MDBCardText>
                           <MDBCardText>Address: {log.address}</MDBCardText>
                           <MDBCardText>Vehicle: {log.car}</MDBCardText>
                           <MDBCardText>Vehicle Plate: {log.carPlateNumber}</MDBCardText>
