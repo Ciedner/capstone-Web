@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faChartColumn, faAddressCard, faPlus, faCar, faUser, faCoins, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
-import { getDocs, collection } from "firebase/firestore";
+import { getDocs, collection, query, where} from "firebase/firestore";
 
 
 const listItemStyle = {
@@ -53,14 +53,21 @@ const Establishment = () => {
   
     const fetchParkingLogs = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'logs'));
+        // Assuming you have a way to get the current user's managementName
+        const currentUserManagementName = user.managementName;
+        const logsCollectionRef = collection(db, 'logs');
+        // Create a query against the collection.
+        const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
+  
+        const querySnapshot = await getDocs(q);
         const logs = [];
         querySnapshot.forEach((doc) => {
           logs.push({ id: doc.id, ...doc.data() });
         });
-        // Sort by timeIn in descending order if not already sorted and take the first three
-        const sortedLogs = logs.sort((a, b) => new Date (b.timeIn) - new Date (a.timeIn)).slice(0, 3);
-        console.log('Logs fetched:', sortedLogs); // Debug: Log the fetched data
+  
+        // Sort and slice the logs as before
+        const sortedLogs = logs.sort((a, b) => new Date(b.timeIn) - new Date(a.timeIn)).slice(0, 3);
+        console.log('Logs fetched:', sortedLogs);
         setParkingLogs(sortedLogs);
       } catch (error) {
         console.error("Error fetching parking logs: ", error);
@@ -292,7 +299,7 @@ const Establishment = () => {
           <Card> 
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}> <FontAwesomeIcon icon={faCar} color="green"/> Parking Availability</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}> {establishmentData && establishmentData.numberOfParkingLots}</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{user.numberOfParkingLots}</Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -308,7 +315,7 @@ const Establishment = () => {
           <Card>
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}><FontAwesomeIcon icon={faUser} color="blue" /> Total Users today</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>0</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>0 </Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -316,7 +323,7 @@ const Establishment = () => {
           <Card>
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}><FontAwesomeIcon icon={faFileInvoiceDollar} color="orange"/> Parking Payment</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{establishmentData && establishmentData.parkingPay}</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{user.parkingPay}</Card.Text>
             </Card.Body>
           </Card>
         </div>  
