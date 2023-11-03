@@ -96,6 +96,7 @@ const ParkingSlot = () => {
   const { user } = useContext(UserContext);
   const [agent, setAgentName] = useState (user.firstName || "");
   const [agentL, setAgentLName] = useState (user.lastName || "");
+  const [managementName, setManagementName] = useState (user.managementName || "");
   const fullName = `${agent} ${agentL}`;
   const [errorMessage, setErrorMessage] = useState("");
   const addToLogs = async (userDetails) => {
@@ -108,6 +109,7 @@ const ParkingSlot = () => {
         timeIn: timestamp,
         timeOut: null,
         agent: fullName,
+        managementName: managementName,
       };
   
       const docRef = await addDoc(logsCollectionRef, logData);
