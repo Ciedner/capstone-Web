@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Table, Button, Row, Col } from "react-bootstrap";
 import {db} from "../config/firebase"
-import {collection, onSnapshot} from "firebase/firestore";
+import { collection, onSnapshot, Timestamp, where, getDocs, query} from 'firebase/firestore';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import UserContext from '../UserContext';
 
 const App = () => {
+  const { user } = useContext(UserContext);
   const [showAccountingPage, setShowAccountingPage] = useState(false);
   const [showCustomer, setShowCustomer] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
-  const [parkingLogsData, setParkingLogsData] = useState([]);
+  const [parkingLogs, setParkingLogs] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
-  const [logsData, setLogsData] = useState([]);
   const [revenue, setRevenue] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,17 +43,40 @@ const App = () => {
 
 
   useEffect(() => {
-    const logsRef = collection(db, 'logs');
-
-    const unsubscribe = onSnapshot(logsRef, (snapshot) => {
-      const newData = snapshot.docs.map((doc) => doc.data());
-      setLogsData(newData);
-    });
-
-    return () => {
-      unsubscribe();
+    const fetchParkingLogs = async () => {
+      if (!user || !user.managementName) {
+        // If user details are not available, don't fetch and set loading to false
+        setLoading(false);
+        return;
+      }
+      setLoading(true); // Start loading before the fetch begins
+      try {
+        // Assuming you have a way to get the current user's managementName
+        const currentUserManagementName = user.managementName;
+        const logsCollectionRef = collection(db, 'logs');
+        // Create a query against the collection.
+        const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
+  
+        const querySnapshot = await getDocs(q);
+        const logs = [];
+        querySnapshot.forEach((doc) => {
+          logs.push({ id: doc.id, ...doc.data() });
+        });
+        setParkingLogs(logs);  // Set the fetched logs into the state
+      } catch (error) {
+        console.error("Error fetching parking logs: ", error);
+      }
+      finally {
+        setLoading(false); // Stop loading regardless of the result
+      }
     };
-  }, []);
+
+  
+    // Initial fetch
+    if (user && user.managementName) {
+      fetchParkingLogs();
+    }
+  }, [user, db]);
   
   useEffect(() => {
     const scheduleRef = collection(db, 'schedule');
@@ -202,15 +226,15 @@ const App = () => {
                 </tr>
               </thead>
               <tbody>
-              {logsData.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.email}</td>
-                  <td><h5 style={{fontFamily:'Georgina', fontSize:'15px', color:'green'}}>Time in: </h5>{new Date(row.timeOut.seconds * 1000).toLocaleString()}
+              {parkingLogs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.email}</td>
+                  <td><h5 style={{fontFamily:'Georgina', fontSize:'15px', color:'green'}}>Time in: </h5>{new Date(log.timeOut.seconds * 1000).toLocaleString()}
                   <br></br>
-                  <h5 style={{fontFamily:'Georgina', fontSize:'15px', color:'red'}}>Time out: </h5>{new Date(row.timeIn.seconds * 1000).toLocaleString()}
+                  <h5 style={{fontFamily:'Georgina', fontSize:'15px', color:'red'}}>Time out: </h5>{new Date(log.timeIn.seconds * 1000).toLocaleString()}
                   </td>
-                  <td>{row.name} - {row.paymentStatus}</td>
-                  <td>30</td>
+                  <td>{log.name} - {log.paymentStatus}</td>
+                  <td>{user.parkingPay}</td>
                 </tr>
               ))}
               </tbody>
@@ -230,6 +254,11 @@ const App = () => {
                         style={{ width: '30px', marginRight: '10px'}}
                       />Customer Email</th>
                         <th><img
+                        src="name.png"
+                        alt="name"
+                        style={{ width: '30px', marginRight: '10px'}}
+                      />Name </th>
+                       <th><img
                         src="cars.jpg"
                         alt="cars"
                         style={{ width: '30px', marginRight: '10px'}}
@@ -252,13 +281,14 @@ const App = () => {
                       </tr>
                     </thead>
                     <tbody>
-              {logsData.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.email}</td>
-                  <td>{row.car}</td>
-                  <td>{row.carPlateNumber}</td>
-                  <td>{new Date(row.timeIn.seconds * 1000).toLocaleString()}</td>
-                  <td>{new Date(row.timeOut.seconds * 1000).toLocaleString()}</td>
+              { parkingLogs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.email}</td>
+                  <td>{log.name}</td>
+                  <td>{log.car}</td>
+                  <td>{log.carPlateNumber}</td>
+                  <td>{new Date(log.timeIn.seconds * 1000).toLocaleString()}</td>
+                  <td>{new Date(log.timeOut.seconds * 1000).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
