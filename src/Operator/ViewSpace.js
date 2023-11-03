@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Button, Modal, Form} from 'react-bootstrap';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
 import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc} from 'firebase/firestore';
 import SearchForm from './SearchForm';
+import UserContext from '../UserContext';
 
 
 const ParkingSlot = () => {
@@ -92,7 +93,10 @@ const ParkingSlot = () => {
   const [selectedSlot, setSelectedSlot] = useState(null); 
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [selectedPlateNumber, setSelectedPlateNumber] = useState(""); 
-
+  const { user } = useContext(UserContext);
+  const [agent, setAgentName] = useState (user.firstName || "");
+  const [agentL, setAgentLName] = useState (user.lastName || "");
+  const fullName = `${agent} ${agentL}`;
   const [errorMessage, setErrorMessage] = useState("");
   const addToLogs = async (userDetails) => {
     try {
@@ -103,6 +107,7 @@ const ParkingSlot = () => {
         paymentStatus: 'Pending',
         timeIn: timestamp,
         timeOut: null,
+        agent: fullName,
       };
   
       const docRef = await addDoc(logsCollectionRef, logData);
