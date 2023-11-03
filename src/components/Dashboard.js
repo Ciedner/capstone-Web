@@ -47,7 +47,7 @@ const Establishment = () => {
   const [totalUsers, setTotalUsers] = useState (0); 
   const parkingPay = user.parkingPay;
   const totalRevenues = totalUsers * parkingPay;
-  const updateInterval = 10000; // 10 seconds for example
+  const updateInterval = 1000; 
 
   useEffect(() => {
     let interval;

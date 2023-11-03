@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Table, Card, Container, Form, DropdownButton, Dropdown, Spinner } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FaUserCircle } from 'react-icons/fa';
 import { faCar, faCoins, faUser, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import { db } from '../config/firebase';
-import { collection, onSnapshot, Timestamp} from 'firebase/firestore';
+import { collection, onSnapshot, Timestamp, where, getDocs, query} from 'firebase/firestore';
+import UserContext from '../UserContext';
 
 function TicketInfo() {
   // State variables
-  const [data, setData] = useState([]);
+  const { user } = useContext(UserContext);
+
+  const [parkingLogs, setParkingLogs] = useState([]);
   const [userOccupy, setOccupants] = useState(60);
-  const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [fixedPrice, setFixedPrice] = useState(30);
-
+  const parkingPay = user.parkingPay;
+  const totalRevenues = totalUsers * parkingPay;
   const [loading, setLoading] = useState(true);
-
-
-  const navigate = useNavigate();
-  const location = useLocation();
 
 
   const styles = {
@@ -38,18 +36,42 @@ function TicketInfo() {
   };
 
   useEffect(() => {
-    const parkingLogsRef = collection(db, 'parkingLogs');
-
-    const unsubscribe = onSnapshot(parkingLogsRef, (snapshot) => {
-      const newData = snapshot.docs.map((doc) => doc.data());
-      setData(newData);
-      setLoading(false); 
-    });
-
-    return () => {
-      unsubscribe(); 
+    const fetchParkingLogs = async () => {
+      if (!user || !user.managementName) {
+        // If user details are not available, don't fetch and set loading to false
+        setLoading(false);
+        return;
+      }
+      setLoading(true); // Start loading before the fetch begins
+      try {
+        // Assuming you have a way to get the current user's managementName
+        const currentUserManagementName = user.managementName;
+        const logsCollectionRef = collection(db, 'logs');
+        // Create a query against the collection.
+        const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
+  
+        const querySnapshot = await getDocs(q);
+        const logs = [];
+        querySnapshot.forEach((doc) => {
+          logs.push({ id: doc.id, ...doc.data() });
+        });
+        setParkingLogs(logs);  // Set the fetched logs into the state
+        const totalUser = logs.length;
+        setTotalUsers(totalUser);
+      } catch (error) {
+        console.error("Error fetching parking logs: ", error);
+      }
+      finally {
+        setLoading(false); // Stop loading regardless of the result
+      }
     };
-  }, []);
+
+  
+    // Initial fetch
+    if (user && user.managementName) {
+      fetchParkingLogs();
+    }
+  }, [user, db]);
 
   function formatTimestamp(timestamp) {
     if (timestamp && timestamp.seconds && timestamp.nanoseconds) {
@@ -59,17 +81,7 @@ function TicketInfo() {
       return '';
     }
   }
-  useEffect(() => {
-    const totalPaidRevenues = data.reduce((total, row) => {
-      if (row.paymentStatus === 'Paid') {
-        return total + fixedPrice;
-      }
-      return total;
-    }, 0);
-    const totalUsersToday = data.length;
-    setTotalUsers(totalUsersToday);
-    setTotalRevenues(totalPaidRevenues);
-  }, [data]);
+ 
 
   return (
     <div style={{ backgroundColor: '#3b89ac', minHeight: '100vh' }}>
@@ -130,7 +142,7 @@ function TicketInfo() {
           <div className="col-md-3">
           </div>
           <div className="col-md-3">
-            <Card>
+            <Card >
               <Card.Body>
                 <Card.Title style={{ fontFamily: 'Courier New', textAlign: 'center' }}>
                   <FontAwesomeIcon icon={faCoins} color="red" /> Total Revenues
@@ -161,7 +173,6 @@ function TicketInfo() {
           <Table responsive>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Vehicle</th>
                 <th>Plate No</th>
@@ -171,15 +182,14 @@ function TicketInfo() {
               </tr>
             </thead>
             <tbody>
-              {data.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.id}</td>
-                  <td>{row.name}</td>
-                  <td>{row.vehicle}</td>
-                  <td>{row.plateNo}</td>
-                  <td>{row.timeIn}</td>
-                    <td>{row.timeOut}</td>
-                  <td style={{ color: row.paymentStatusColor }}>{row.paymentStatus}</td>
+              {parkingLogs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.name}</td>
+                  <td>{log.car}</td>
+                  <td>{log.carPlateNumber}</td>
+                  <td>{log.timeIn.toDate().toLocaleString()}</td>
+                    <td>{log.timeOut.toDate().toLocaleString()}</td>
+                  <td style={{ color: log.paymentStatusColor }}>{log.paymentStatus}</td>
                 </tr>
               ))}
             </tbody>
