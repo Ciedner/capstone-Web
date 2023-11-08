@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faChartColumn, faAddressCard, faPlus, faCar, faUser, faCoins, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
-import { getDocs, collection, query, where} from "firebase/firestore";
+import { getDocs, collection, query, where, doc, getDoc} from "firebase/firestore";
 
 
 const listItemStyle = {
@@ -45,9 +45,29 @@ const Establishment = () => {
   const [managementName, setManagementName] = useState(user.managementName || ""); 
   const [address, setAddress] = useState(user.companyAddress || ""); 
   const [totalUsers, setTotalUsers] = useState (0); 
+  const [profileImageUrl, setProfileImageUrl] = useState("");
   const parkingPay = user.parkingPay;
   const totalRevenues = totalUsers * parkingPay;
   const updateInterval = 1000; 
+
+
+  const userDocRef = auth.currentUser ? doc(db, 'establishments', auth.currentUser.uid) : null;
+
+  useEffect(() => {
+    if (userDocRef) {
+      const fetchImageUrl = async () => {
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          setProfileImageUrl(userData.profileImageUrl);
+        } else {
+          console.log('No such document!');
+        }
+      };
+
+      fetchImageUrl().catch(console.error);
+    }
+  }, [userDocRef]);
 
   useEffect(() => {
     let interval;
@@ -215,7 +235,7 @@ const Establishment = () => {
               <MDBCardBody className="text-center" style={{backgroundColor:"#bfd2d9"}}>
                 <p style={{fontFamily:"Georgina"}}>Administrator</p>
                 <MDBCardImage
-                  src="agent.jpg"
+                 src={[profileImageUrl] || "default_placeholder.jpg"}
                   alt="Operator Profile Logo"
                   className="rounded-circle"
                   style={{ width: '70px', backgroundColor:"#003851"}}
