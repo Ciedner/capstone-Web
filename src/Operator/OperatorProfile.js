@@ -16,13 +16,15 @@ import {
 } from 'mdb-react-ui-kit';
 import UserContext from '../UserContext';
 import {auth, db} from "../config/firebase"
-import { updateDoc, doc } from 'firebase/firestore';
+import { updateDoc, doc, getDoc } from 'firebase/firestore';
+import { storage } from "../config/firebase";
+import {ref, uploadBytes, getDownloadURL, listAll, list  } from "firebase/storage"
+import {v4} from "uuid"; 
 
 export default function EditButton() {
   const [isEditing, setIsEditing] = useState(false);
   const location = useLocation();
   const { user } = useContext(UserContext);
-
   const [name, setName] = useState(user.firstName || ""); 
   const [lastName, setLastName] = useState(user.lastName || ""); 
   const fullName = `${name} ${lastName}`;
@@ -33,6 +35,61 @@ export default function EditButton() {
   const [companyAddress, setCompanyAddress] = useState(user.companyAddress || ""); 
   const [companyContact, setCompanyContact] = useState(user.companyContact || ""); 
   const [companyEmail, setCompanyEmail] = useState(user.companyEmail || ""); 
+  const [profileImageUrl, setProfileImageUrl] = useState("");
+
+  const userDocRef = auth.currentUser ? doc(db, 'agents', auth.currentUser.uid) : null;
+
+  const [imageUpload, setImageUpload] = useState(null);
+  const [imageUrls, setImageUrls] = useState([]);
+  const [currentImageUrl, setCurrentImageUrl] = useState("");
+
+  const saveProfileImageUrl = async (url) => {
+    if (userDocRef) {
+      await updateDoc(userDocRef, {
+        profileImageUrl: url,
+      });
+    }
+  };
+
+
+  useEffect(() => {
+    if (userDocRef) {
+      const fetchImageUrl = async () => {
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          setProfileImageUrl(userData.profileImageUrl);
+        } else {
+          console.log('No such document!');
+        }
+      };
+
+      fetchImageUrl().catch(console.error);
+    }
+  }, [userDocRef]);
+
+  const imagesListRef = ref(storage, "images/");
+  const uploadFile = () => {
+    if (imageUpload && auth.currentUser) {
+      const imageRef = ref(storage, `images/${imageUpload.name + v4()}`);
+      uploadBytes(imageRef, imageUpload).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then((url) => {
+          setProfileImageUrl(url); // Update the state to show the new image
+          saveProfileImageUrl(url); // Save the image URL to Firestore
+        });
+      });
+    }
+  };
+  
+  useEffect(() => {
+    listAll(imagesListRef).then((response) => {
+      response.items.forEach((item) => {
+        getDownloadURL(item).then((url) => {
+          setImageUrls((prev) => [...prev, url]);
+        });
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -158,10 +215,26 @@ export default function EditButton() {
         <MDBRow className="justify-content-center align-items-center h-100">
           <MDBCol lg="9" xl="7">
             <MDBCard>
-              <div className="rounded-top text-white d-flex flex-row" style={{ backgroundColor: '#000', height: '200px' }}>
-                <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '150px' }}>
-                  <MDBCardImage src="richard.jpg"
-                    alt="Generic placeholder image" className="mt-4 mb-2 img-thumbnail" fluid style={{ width: '150px', zIndex: '1' }} />
+            <div className="rounded-top text-white d-flex flex-row" style={{ backgroundColor: '#000', height: '200px' }}>
+            <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '120px' }}>
+                  {/* Image display */}
+                 <MDBCardImage 
+              src={profileImageUrl || "default_placeholder.jpg"}
+              alt="Profile"
+              className="mt-4 mb-2 img-thumbnail"
+              fluid style={{ width: '150px', zIndex: '1' }}
+            />
+        {isEditing && (
+          <>
+            <input 
+              type="file"
+              onChange={(event) => {
+                setImageUpload(event.target.files[0]);
+              }}
+            />
+            <button onClick={uploadFile}> Upload Image</button>
+          </>
+        )}
                 </div>
                 <div className="ms-3" style={{ marginTop: '130px', fontFamily:'Georgina'}}>
                   {isEditing ? (
