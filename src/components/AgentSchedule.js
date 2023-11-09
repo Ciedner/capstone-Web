@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -9,7 +9,7 @@ import Form from "react-bootstrap/Form";
 import { useNavigate, Link } from "react-router-dom";
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import { FaUserCircle } from "react-icons/fa";
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase'; 
 
 function Calendar() {
@@ -21,9 +21,12 @@ function Calendar() {
   const [eventEndTime, setEventEndTime] = useState("00:00");
   const [eventEmail, setEventEmail] = useState("");
   const [eventAgentName, setEventAgentName] = useState("");
+  const [eventAgentName1, setEventAgentName1] = useState("");
   const [events, setEvents] = useState([]);
+  const [clickedEventDetails, setClickedEventDetails] = useState("");
   const [eventTimeIn, setEventTimeIn] = useState("00:00");
 const [eventTimeOut, setEventTimeOut] = useState("00:00");
+const [filteredEmails, setFilteredEmails] = useState([]);
 
   const navigate = useNavigate();
 
@@ -92,10 +95,15 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
       const startDateTime = new Date(
         `${eventStartDate.toISOString().split('T')[0]}T${eventStartTime}`
       );
-
+      
       const endDateTime = new Date(
         `${eventEndDate.toISOString().split('T')[0]}T${eventEndTime}`
       );
+      const currentTime = new Date();
+      if (endDateTime > currentTime) {
+        alert('Cannot add an event that has already ended.');
+        return;
+      }
       const startTimestamp = startDateTime.getTime() + CST_OFFSET * 60000;
       const endTimestamp = endDateTime.getTime() + CST_OFFSET * 60000;
       startDateTime.setTime(startTimestamp + PST_OFFSET * 60000);
@@ -107,6 +115,7 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
         end: endDateTime,
         email: eventEmail,
         name: eventAgentName,
+        lastName: eventAgentName1,
         timeIn: eventTimeIn,
         timeOut: eventTimeOut,
       };
@@ -126,6 +135,7 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
           setEventEndTime('00:00');
           setEventEmail('');
           setEventAgentName('');
+          setEventAgentName1('');
           setEventTimeIn('00:00');
           setEventTimeOut('00:00');
   
@@ -137,27 +147,81 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
         });
     }
   };
+
+
+  const handleEmailClick = (email) => {
+    const agent = filteredAgents.find(agent => agent.email === email);
+    console.log(agent); // This should log the agent object
+    if (agent) {
+
+      setEmailAndName(email, agent.name);
+    }
+  };
+  
+  const fetchAgents = async (input) => {
+    if (input.length === 0) {
+      setFilteredAgents([]);
+      return;
+    }
+  
+    // Fetch agents from Firestore where the email starts with the input
+    const querySnapshot = await getDocs(query(collection(db, "agents"), where("email", ">=", input), where("email", "<=", input + '\uf8ff')));
+    const matchedAgents = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  
+    setFilteredAgents(matchedAgents);
+  };
+
+  const [filteredAgents, setFilteredAgents] = useState([]);
+  const setEmailAndName = (email, name, lName) => {
+    console.log('Setting email and name:', email, name, lName); // Check if this gets logged when you click on an email
+    setEventEmail(email);
+    setEventAgentName(name);
+    setEventAgentName1(lName);
+    setFilteredAgents([]); // Clear suggestions
+  };
+  
+
+  useEffect(() => {
+    // Suppose you load events from Firebase when the component mounts
+    // Here is how you can filter them before setting them to state.
+    const loadEvents = async () => {
+      // ... your code to load events from Firestore
+      // For example:
+      const eventsCollection = collection(db, "schedule");
+      const eventsSnapshot = await getDocs(eventsCollection);
+      const loadedEvents = eventsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      
+      // Filter out events that have already ended.
+      const currentEvents = loadedEvents.filter(event => {
+        const now = new Date();
+        return new Date(event.end.seconds * 1000) > now; // Assuming event.end is a Firestore Timestamp
+      });
+  
+      setEvents(currentEvents);
+    };
+  
+    loadEvents();
+  }, []);
+
   
   const handleEventClick = (info) => {
     const clickedEvent = info.event;
-
+  
     const clickedEventDetails = {
       title: clickedEvent.title,
-      start: clickedEvent.start.toLocaleString("en-PH", {
-        timeZone: "Asia/Manila",
-      }),
-      end: clickedEvent.end.toLocaleString("en-PH", {
-        timeZone: "Asia/Manila",
-      }),
+      start: clickedEvent.start.getTime(), // Convert to timestamp
+      end: clickedEvent.end.getTime(), // Convert to timestamp
       email: clickedEvent.extendedProps.email,
       name: clickedEvent.extendedProps.name,
     };
-
-
-    alert( 
-      `Event Details:\nTitle: ${clickedEventDetails.title}\nStart: ${clickedEventDetails.start}\nEnd: ${clickedEventDetails.end}\nEmail: ${clickedEventDetails.email}\nAgent Name: ${clickedEventDetails.name}`
-    );
+  
+    setShowModal(true);
+    setClickedEventDetails(clickedEventDetails);
   };
+  
   const emailColorMap = {
     "richardm@gmail.com": "blue",
     "markym@gmail.com": "green",
@@ -230,6 +294,24 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
         timeZone="Asia/Manila"
         locale="en"
       />
+       <Modal show={showModal} onHide={handleModalClose} style={{fontFamily:'Georgina', fontSize:'18px'}}>
+  <Modal.Header closeButton>
+    <Modal.Title>Event Details</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+  <p>Title: {clickedEventDetails.title}</p>
+<p>Start: {new Date(clickedEventDetails.start).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</p>
+<p>End: {new Date(clickedEventDetails.end).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</p>
+<p>Email: {clickedEventDetails.email}</p>
+<p>Agent Name: {clickedEventDetails.name}</p>
+
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleModalClose}>
+      Close
+    </Button>
+  </Modal.Footer>
+</Modal>
       <Button onClick={handleModalOpen} style={{ marginTop: "10px", marginLeft: "100vh" }}>
         Add Event
       </Button>
@@ -295,24 +377,36 @@ const [eventTimeOut, setEventTimeOut] = useState("00:00");
     onChange={(e) => setEventTimeOut(e.target.value)}
   />
 </Form.Group>
-            <Form.Group controlId="eventEmail">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter email"
-                value={eventEmail}
-                onChange={(e) => setEventEmail(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group controlId="eventAgentName">
-              <Form.Label>Agent Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter agent name"
-                value={eventAgentName}
-                onChange={(e) => setEventAgentName(e.target.value)}
-              />
-            </Form.Group>
+<Form.Group controlId="eventEmail">
+  <Form.Label>Email</Form.Label>
+  <Form.Control
+    type="email"
+    placeholder="Enter email"
+    value={eventEmail}
+    onChange={(e) => {
+      setEventEmail(e.target.value);
+      fetchAgents(e.target.value);
+    }}
+  />
+ <ul style={{ listStyleType: "none", padding: 0, position: 'absolute', zIndex: 1000 }}>
+  {filteredAgents.map((agent) => (
+    <li key={agent.id} onClick={() => setEmailAndName(agent.email, agent.firstName, agent.lastName)} style={{ cursor: 'pointer' }}>
+      {agent.email}
+    </li>
+  ))}
+</ul>
+
+</Form.Group>
+<Form.Group controlId="eventAgentName">
+  <Form.Label style={{marginTop:"20px"}}>Agent Name</Form.Label>
+    <Form.Control
+      type="text"
+      placeholder="Agent name will be set automatically"
+      value={`${eventAgentName} ${eventAgentName1}`}
+      onChange={(e) => setEventAgentName(e.target.value)}
+      disabled={true} // Optional: make it read-only if you don't want manual edits
+    />
+</Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
