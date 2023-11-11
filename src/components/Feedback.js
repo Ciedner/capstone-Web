@@ -5,7 +5,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { useLocation, Link } from "react-router-dom";
 import { auth, db } from "../config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
 
 const FeedbackPage = () => {
   const [feedbackList, setFeedbackList] = useState([]);
@@ -62,18 +62,26 @@ const FeedbackPage = () => {
       });
   };
 
-  const handleDeleteFeedback = (id) => {
+  const handleDeleteFeedback = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this feedback?');
     if (confirmed) {
-      const updatedFeedbackList = feedbackList.filter((feedback) => feedback.id !== id);
-      setFeedbackList(updatedFeedbackList);
-
-      const updatedClickedIds = clickedFeedbackIds.filter((clickedId) => clickedId !== id);
-      localStorage.setItem('clickedFeedbackIds', JSON.stringify(updatedClickedIds));
-      setClickedFeedbackIds(updatedClickedIds);
-
-      if (selectedFeedback && selectedFeedback.id === id) {
-        setSelectedFeedback(null);
+      try {
+       
+        const docRef = doc(db, 'feedback', id);
+        await deleteDoc(docRef);
+  
+        const updatedFeedbackList = feedbackList.filter((feedback) => feedback.id !== id);
+        setFeedbackList(updatedFeedbackList);
+  
+        const updatedClickedIds = clickedFeedbackIds.filter((clickedId) => clickedId !== id);
+        localStorage.setItem('clickedFeedbackIds', JSON.stringify(updatedClickedIds));
+        setClickedFeedbackIds(updatedClickedIds);
+  
+        if (selectedFeedback && selectedFeedback.id === id) {
+          setSelectedFeedback(null);
+        }
+      } catch (error) {
+        console.error("Error deleting document: ", error);
       }
     }
   };
