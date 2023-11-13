@@ -4,7 +4,7 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc} from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp, addDoc, setDoc, doc, getDoc} from 'firebase/firestore';
 import SearchForm from './SearchForm';
 import UserContext from '../UserContext';
 
@@ -99,7 +99,8 @@ const ParkingSlot = () => {
   const [managementName, setManagementName] = useState (user.managementName || "");
   const fullName = `${agent} ${agentL}`;
   const [errorMessage, setErrorMessage] = useState("");
-  
+  const [image, setImage] = useState ("");
+
   const addToLogs = async (userDetails) => {
     try {
       const logsCollectionRef = collection(db, 'logs'); 
@@ -111,8 +112,17 @@ const ParkingSlot = () => {
         timeOut: null,
         agent: fullName,
         managementName: managementName,
+        profileImageUrl: null,
       };
-  
+
+      const usersCollectionRef = collection(db, 'user');
+      const querySnapshot = await getDocs(query(usersCollectionRef, where('carPlateNumber', '==', userDetails.carPlateNumber)));
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0].data(); // Take the first document found
+        logData.profileImageUrl = userDoc.profileImageUrl || null;
+      }
+
       const docRef = await addDoc(logsCollectionRef, logData);
       console.log('Log added with ID: ', docRef.id);
     } catch (error) {

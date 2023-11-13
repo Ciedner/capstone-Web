@@ -386,7 +386,7 @@ const Establishment = () => {
                     <MDBCol md="4" key={log.id}>
                       <MDBCard style={{ backgroundColor: "#bfd2d9" }}>
                         <img
-                          src="ppic.jpg"
+                            src={log.profileImageUrl}
                           className="img-fluid"
                           alt="img"
                         />
