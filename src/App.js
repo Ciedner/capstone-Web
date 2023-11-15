@@ -12,10 +12,13 @@ import OperatorProfile from "./Operator/OperatorProfile"
 import AgentSchedule from "./components/AgentSchedule"
 import TicketInfo from "./components/TicketInfo"
 import UserProvider from "./UserProvider";
+import AdminPage from "./admin/AdminPage";
+import FetchEstablishments from "./admin/FetchEstablishments";
 
 
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Establishment from "./components/Dashboard";
 function App() {
   return (
     <div className="App">
@@ -24,6 +27,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="Create" element={<Create />} />
+          <Route path="AdminPage" element={<AdminPage />} />
           <Route path="Dashboard" element={<Dashboard />} />
           <Route path="OperatorDashboard" element={<OperatorDashboard />} />
           <Route path="ViewSpace" element={<ViewSpace/>} />
@@ -35,6 +39,7 @@ function App() {
           <Route path="OperatorProfile" element={<OperatorProfile/>} />
           <Route path="AgentSchedule" element={<AgentSchedule/>} />
           <Route path="TicketInfo" element={<TicketInfo/>} />
+          <Route path="FetchEstablishments" element={<FetchEstablishments/>} />
         </Routes>
       </Router>
       </UserProvider>

@@ -3,6 +3,7 @@ import { db, auth } from '../config/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { Alert } from 'react-bootstrap';
 
 function Create() {
   const [managementName, setManagementName] = useState('');
@@ -12,17 +13,18 @@ function Create() {
   const [numberOfParkingLots, setNumberOfParkingLots] = useState('');
   const [parkingPay, setParkingPayment] = useState('');
   const [contact, setContact] = useState('');
-
+  const [isApproved, setIsApproved] = useState (false);
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-    
-      await setDoc(doc(db, "establishments", user.uid), {
+  
+      // Save to pendingEstablishments
+      await setDoc(doc(db, "pendingEstablishments", user.uid), {
         email,
         companyAddress,
         contact,
@@ -30,18 +32,12 @@ function Create() {
         managementName,
         parkingPay,
         password,
+        isApproved: false, // This can be omitted as it's pending by default
       });
   
-      console.log('Document successfully written!');
-      setManagementName('');
-      setAddress('');
-      setEmail('');
-      setPassword('');
-      setNumberOfParkingLots('');
-      setContact('');
-      setParkingPayment('');
-      alert('Successfully registered!');
-      navigate("/");
+    alert('We are currently processing your account. Please wait for admins approval. Thank you!');
+    navigate("/");
+      // Reset form fields and navigate as needed
     } catch (error) {
       console.error('Error creating account:', error);
       alert(error.message);
