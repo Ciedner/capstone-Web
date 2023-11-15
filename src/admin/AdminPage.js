@@ -7,7 +7,45 @@ function AdminPage() {
     const [pendingAccounts, setPendingAccounts] = useState([]);
     const [establishments, setEstablishments] = useState([]);
     const [summaryCardsData, setSummaryCardsData] = useState([]);
+    const [parkingSeeker, setParkingSeeker] = useState([]);
+    const [agent, setAgent] = useState ([]);
+
+    useEffect(() => {
+        const fetchParkingUsers = async () => {
+          try {
+            const querySnapshot = await getDocs(collection(db, "user"));
+            const userList = querySnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setParkingSeeker(userList);
+          } catch (error) {
+            console.error("Error fetching parking seeker:", error);
+            // Handle the error appropriately in your application
+          }
+        };
     
+        fetchParkingUsers();
+      }, []);
+
+      useEffect(() => {
+        const fetchAgents = async () => {
+          try {
+            const querySnapshot = await getDocs(collection(db, "agents"));
+            const agentsList = querySnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setAgent(agentsList);
+          } catch (error) {
+            console.error("Error fetching agents:", error);
+            // Handle the error appropriately in your application
+          }
+        };
+    
+        fetchAgents();
+      }, []);
+
   useEffect(() => {
     const fetchEstablishments = async () => {
       try {
@@ -29,7 +67,9 @@ function AdminPage() {
   useEffect(() => {
     setSummaryCardsData([
         { title: 'Pending Accounts  ', value: `${pendingAccounts.length} Account Pending`, imgSrc: 'pending.png' },
-        { title: 'Registered Accounts', value: `${establishments.length} Registered`, imgSrc: 'check.png'}
+        { title: 'Establishment Accounts', value: `${establishments.length} Registered`, imgSrc: 'check.png'},
+        { title: 'Parking Seekers', value: `${parkingSeeker.length} Registered`, imgSrc: 'check.png'},
+        { title: 'Agents Accounts', value: `${agent.length} Registered`, imgSrc: 'check.png'}
         // ... other summary cards
     ]);
 }, [pendingAccounts]);
@@ -86,7 +126,8 @@ function AdminPage() {
     <span className="admin-text">Admin</span>
   </div>
         <p><a href='FetchEstablishments'>Establishment List</a></p>
-        <p></p>
+        <p><a href='FetchParkingUsers'>Parking Seeker List</a></p>
+        <p><a href='FetchAgents'>Agents List</a></p>
       </div>
       <div className="main-content">
         <div className="header">Good day, Mr. Berto!</div>

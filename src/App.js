@@ -14,11 +14,9 @@ import TicketInfo from "./components/TicketInfo"
 import UserProvider from "./UserProvider";
 import AdminPage from "./admin/AdminPage";
 import FetchEstablishments from "./admin/FetchEstablishments";
-
-
-
+import FetchParkingUsers from "./admin/FetchParkingUser";
+import FetchAgents from "./admin/FetchAgents";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Establishment from "./components/Dashboard";
 function App() {
   return (
     <div className="App">
@@ -40,6 +38,8 @@ function App() {
           <Route path="AgentSchedule" element={<AgentSchedule/>} />
           <Route path="TicketInfo" element={<TicketInfo/>} />
           <Route path="FetchEstablishments" element={<FetchEstablishments/>} />
+          <Route path="FetchParkingUsers" element={<FetchParkingUsers/>} />
+          <Route path="FetchAgents" element={<FetchAgents/>} />
         </Routes>
       </Router>
       </UserProvider>

@@ -3,25 +3,25 @@ import { db } from '../config/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import './AdminPage.css';
 
-const FetchEstablishments = () => {
-  const [establishments, setEstablishments] = useState([]);
+const FetchAgents = () => {
+  const [agents, setAgents] = useState([]);
 
   useEffect(() => {
-    const fetchEstablishments = async () => {
+    const fetchAgents = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "establishments"));
-        const establishmentsList = querySnapshot.docs.map(doc => ({
+        const querySnapshot = await getDocs(collection(db, "agents"));
+        const agentsList = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setEstablishments(establishmentsList);
+        setAgents(agentsList);
       } catch (error) {
-        console.error("Error fetching establishments:", error);
+        console.error("Error fetching parking seeker:", error);
         // Handle the error appropriately in your application
       }
     };
 
-    fetchEstablishments();
+    fetchAgents();
   }, []);
 
   return (
@@ -37,38 +37,35 @@ const FetchEstablishments = () => {
     <span className="admin-text">Admin</span>
   </div>
       <p><a href='AdminPage'>Home</a></p>
+      <p><a href='FetchEstablishments'>Establishment List</a></p>
       <p><a href='FetchParkingUsers'>Parking Seeker List</a></p>
-      <p><a href='FetchAgents'>Agents List</a></p>
     </div>
     <div className="main-content">
       <div className="header">Good day, Mr. Berto!</div>
       <div className="project-list">
-        <h1 className="pending">Establishments Accounts</h1>
-        {establishments.length > 0 ? (
+        <h1 className="pending">Agents Account</h1>
+        {agents.length > 0 ? (
           <ul>
-            {establishments.map(establishment => (
-              <li key={establishment.id} className="w3-bar">
+            {agents.map(agents => (
+              <li key={agents.id} className="w3-bar">
                   <span className="w3-bar-item w3-button w3-white w3-xlarge w3-right"></span>
                   <img 
-                    src={establishment.profileImageUrl || '/default-avatar.png'} 
-                    alt={establishment.managementName} 
+                    src={agents.profileImageUrl || '/default-avatar.png'} 
+                    alt={agents.profileImageUrl} 
                     className="w3-bar-item w3-circle" 
                     style={{ width: '85px' }} 
                   />
                 <div className="w3-bar-item">
-                  <span className="w3-large">{establishment.managementName}</span><br />
-                  <span className="w3-span-sub">{establishment.companyAddress}</span><br />
-                  <span className="w3-span-sub"> Approved on: {"\t"} 
-                      {establishment.createdAt?.seconds
-                        ? new Date(establishment.createdAt.seconds * 1000).toLocaleDateString()
-                        : 'Date not available'}
-                    </span>
+                  <span className="w3-large">{agents.firstName} {agents.lastName}</span><br />
+                  <span className="w3-span-sub">{agents.address}</span><br />
+                  <span className="w3-span-sub">{agents.email}</span><br />
+                  <span className="w3-span-sub">{agents.managementName}</span>
                 </div>
               </li>
             ))}
           </ul>
         ) : (
-          <p>No establishments found.</p>
+          <p>No agents found.</p>
         )}
       </div>
     </div>
@@ -76,4 +73,4 @@ const FetchEstablishments = () => {
   );
 };
 
-export default FetchEstablishments;
+export default FetchAgents;
