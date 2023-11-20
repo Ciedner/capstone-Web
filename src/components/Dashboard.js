@@ -45,6 +45,7 @@ const Establishment = () => {
   const [managementName, setManagementName] = useState(user.managementName || ""); 
   const [address, setAddress] = useState(user.companyAddress || ""); 
   const [totalUsers, setTotalUsers] = useState (0); 
+  const [totalSlots, setTotalSlots] = useState (user.totalSlots || "");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const parkingPay = user.parkingPay;
   const totalRevenues = totalUsers * parkingPay;
@@ -349,7 +350,7 @@ const Establishment = () => {
           <Card> 
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}> <FontAwesomeIcon icon={faCar} color="green"/> Parking Availability</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{user.numberOfParkingLots}</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{user.totalSlots}</Card.Text>
             </Card.Body>
           </Card>
         </div>

@@ -26,6 +26,7 @@ function OperatorDashboard() {
 
   const [parkingPay, setParkingPay] = useState(0);
   const [numberOfParkingLots, setNumberOfParkingLots] = useState(0);
+  const [totalSlots, setTotalSlots] = useState(0); 
   const [parkingLogs, setParkingLogs] = useState([]);
   const totalRevenues = totalUsers * parkingPay;
   const styles = {
@@ -57,7 +58,7 @@ function OperatorDashboard() {
           const establishmentData = querySnapshot.docs[0].data(); // Get the first document's data
           console.log('Establishment Data:', establishmentData); // Log the data to see what you received
           setParkingPay(establishmentData.parkingPay);
-          setNumberOfParkingLots(establishmentData.numberOfParkingLots);
+          setTotalSlots(establishmentData.totalSlots);
         } else {
           console.log('No matching establishment found!');
         }
@@ -146,7 +147,7 @@ function OperatorDashboard() {
           <Card> 
             <Card.Body>
               <Card.Title style={{fontFamily:'Courier New', textAlign:'center'}}> <FontAwesomeIcon icon={faCar} color="green"/> Parking Availability</Card.Title>
-              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{numberOfParkingLots}</Card.Text>
+              <Card.Text style={{ textAlign: 'center', margin: '0 auto', fontFamily:'Copperplate', fontSize:'20px' }}>{totalSlots}</Card.Text>
             </Card.Body>
           </Card>
         </div>
