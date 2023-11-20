@@ -16,6 +16,7 @@ import AdminPage from "./admin/AdminPage";
 import FetchEstablishments from "./admin/FetchEstablishments";
 import FetchParkingUsers from "./admin/FetchParkingUser";
 import FetchAgents from "./admin/FetchAgents";
+import EmailDetailPage from "./admin/EmailDetailPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="FetchEstablishments" element={<FetchEstablishments/>} />
           <Route path="FetchParkingUsers" element={<FetchParkingUsers/>} />
           <Route path="FetchAgents" element={<FetchAgents/>} />
+          <Route path="email/:email" element={<EmailDetailPage />} />
         </Routes>
       </Router>
       </UserProvider>

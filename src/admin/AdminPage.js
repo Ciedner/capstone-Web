@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
 import { collection, query, where, getDocs, updateDoc, doc, getDoc,setDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import './AdminPage.css';
-
+import { Link } from 'react-router-dom';
 function AdminPage() {
     const [pendingAccounts, setPendingAccounts] = useState([]);
     const [establishments, setEstablishments] = useState([]);
@@ -146,11 +146,16 @@ function AdminPage() {
           <h3 className='pending'>Pending Establishment Accounts</h3>
           {pendingAccounts.map(account => (
             <div key={account.id} className="pending-sub">
-              <div className="establishment-email">{account.email}</div>
+              <div className="establishment-email">{account.email}
+              <Link to={`/email/${account.id}`}>
+                {account.email}
+              </Link>
+              </div>
               <div className="establishment-management">{account.managementName}</div>
               <div className="establishment-contact">{account.contact}</div>
               <div className="establishment-address">{account.companyAddress}</div>
-              <div className="establishment-parkingLots">{account.numberOfParkingLots}</div>
+              <div className="establishment-address">{account.numberOfFloors}</div>
+              <div className="establishment-parkingLots">{account.totalSlots}</div>
               <div><button onClick={() => handleApprove(account.id)} className="approve-button">Approve</button></div>
               <div><button onClick={() => handleDecline(account.id)} className="decline-button">Decline</button></div>
             </div>
