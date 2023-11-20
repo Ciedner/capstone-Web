@@ -230,7 +230,7 @@ export default function EditButton() {
           <MDBCol lg="9" xl="7">
             <MDBCard>
             <div className="rounded-top text-white d-flex flex-row" style={{ backgroundColor: '#000', height: '200px' }}>
-            <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '120px' }}>
+            <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '200px' }}>
                   {/* Image display */}
                  <MDBCardImage 
               src={profileImageUrl || "default_placeholder.jpg"}

@@ -88,7 +88,7 @@ function TicketInfo() {
       <Container>
         <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: '#003851' }}>
           <div className="container">
-            <Link className="navbar-brand" to="/">
+            <Link className="navbar-brand" to="/Dashboard">
               SpotWise Parking Management System
             </Link>
             <p style={styles.welcomeMessage}>
