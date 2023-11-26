@@ -4,9 +4,11 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where, serverTimestamp, addDoc, setDoc, doc, getDoc} from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc} from 'firebase/firestore';
 import SearchForm from './SearchForm';
 import UserContext from '../UserContext';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const ParkingSlot = () => {
@@ -24,12 +26,74 @@ const ParkingSlot = () => {
           marginRight: "5px",
         },
       };
+      const { user } = useContext(UserContext);
   const maxZones = 5;
   const initialSlotSets = [{ title: 'Zone 1', slots: Array(15).fill(false) }];
   
   const initialTotalSpaces = initialSlotSets.map(zone => zone.slots.length).reduce((total, spaces) => total + spaces, 0);
 
-  const [slotSets, setSlotSets] = useState(initialSlotSets);
+  const [slotSets, setSlotSets] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user || !user.managementName) {
+        console.log('No user logged in or management name is missing');
+        return;
+      }
+  
+      setIsLoading(true);
+      try {
+        const collectionRef = collection(db, 'establishments');
+        const q = query(collectionRef, where('managementName', '==', user.managementName));
+        const querySnapshot = await getDocs(q);
+  
+        if (!querySnapshot.empty) {
+          const establishmentData = querySnapshot.docs[0].data();
+  
+          let newSlotSets = [];
+  
+          // Check if establishmentData has floorDetails
+          if (Array.isArray(establishmentData.floorDetails) && establishmentData.floorDetails.length > 0) {
+            newSlotSets = establishmentData.floorDetails.map(floor => ({
+              title: floor.floorName,
+              slots: Array.from({ length: parseInt(floor.parkingLots) }, (_, i) => ({ id: i, occupied: false })),
+            }));
+          } else if (establishmentData.totalSlots) {
+            // If there are no floorDetails, use totalSlots to create slots
+            newSlotSets = [{
+              title: 'General Parking',
+              slots: Array.from({ length: parseInt(establishmentData.totalSlots) }, (_, i) => ({ id: i, occupied: false })),
+            }];
+          }
+  
+          // Only update state if we have slot sets to show
+          if (newSlotSets.length > 0) {
+            setSlotSets(newSlotSets);
+          }
+        } else {
+          // No establishment found
+          setSlotSets([]);
+        }
+      } catch (error) {
+        // Error fetching data
+        console.error('Error fetching establishment data:', error);
+        setSlotSets([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [user]);
+  
+  
+
+  
+  
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [zoneAvailableSpaces, setZoneAvailableSpaces] = useState(
     initialSlotSets.map(zone => zone.slots.length)
@@ -61,7 +125,11 @@ const ParkingSlot = () => {
       console.error('Error:', error);
     }
   };
-  
+  const navigate = useNavigate();
+
+  const handleButtonClick = () => {
+  navigate("/reservation");
+ };
 
   
 
@@ -69,16 +137,7 @@ const ParkingSlot = () => {
   const cols = 3;
 
   const handleNext = () => {
-    if (currentSetIndex === slotSets.length - 1) {
-      if (slotSets.length < maxZones) {
-        setSlotSets(prevSets => [
-          ...prevSets,
-          { title: `Zone ${prevSets.length + 1}`, slots: Array(15).fill(false) },
-        ]);
-        setZoneAvailableSpaces(prevSpaces => [...prevSpaces, 15]); 
-        setCurrentSetIndex(currentSetIndex + 1);
-      }
-    } else {
+    if (currentSetIndex < slotSets.length - 1) {
       setCurrentSetIndex(currentSetIndex + 1);
     }
   };
@@ -93,14 +152,12 @@ const ParkingSlot = () => {
   const [selectedSlot, setSelectedSlot] = useState(null); 
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [selectedPlateNumber, setSelectedPlateNumber] = useState(""); 
-  const { user } = useContext(UserContext);
   const [agent, setAgentName] = useState (user.firstName || "");
   const [agentL, setAgentLName] = useState (user.lastName || "");
   const [managementName, setManagementName] = useState (user.managementName || "");
   const fullName = `${agent} ${agentL}`;
   const [errorMessage, setErrorMessage] = useState("");
-  const [image, setImage] = useState ("");
-
+  
   const addToLogs = async (userDetails) => {
     try {
       const logsCollectionRef = collection(db, 'logs'); 
@@ -112,17 +169,8 @@ const ParkingSlot = () => {
         timeOut: null,
         agent: fullName,
         managementName: managementName,
-        profileImageUrl: null,
       };
-
-      const usersCollectionRef = collection(db, 'user');
-      const querySnapshot = await getDocs(query(usersCollectionRef, where('carPlateNumber', '==', userDetails.carPlateNumber)));
-
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0].data(); // Take the first document found
-        logData.profileImageUrl = userDoc.profileImageUrl || null;
-      }
-
+  
       const docRef = await addDoc(logsCollectionRef, logData);
       console.log('Log added with ID: ', docRef.id);
     } catch (error) {
@@ -276,8 +324,13 @@ const ParkingSlot = () => {
         </div>
       </nav>
       <div style={{ textAlign: 'center', fontSize: '15px', marginTop:'10px', marginBottom:'15px'}}>
-                    <h3>{slotSets[currentSetIndex].title}</h3>
-        </div>
+      {slotSets.length > 0 && (
+     <div>
+     <h3>{slotSets[currentSetIndex].title}</h3>
+     </div>
+       )}
+       {slotSets.length === 0 && !isLoading && <div>No parking zones available.</div>}
+     </div>
         <div
         style={{
           display: 'grid',
@@ -292,7 +345,7 @@ const ParkingSlot = () => {
           marginBottom: '20px',
         }}
       >
-       {slotSets[currentSetIndex].slots.map((slot, index) => (
+        {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots && slotSets[currentSetIndex].slots.map((slot, index) => (
   <div
     key={index}
     style={{
@@ -368,6 +421,11 @@ const ParkingSlot = () => {
         </Button>
       </Modal.Footer>
     </Modal>
+
+    <div style={{ textAlign: 'center', marginTop: '10px' }}>
+      <Button onClick={handleButtonClick}>Manage Reservation</Button>
+    </div>
+    
       <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
           <span>  Total Parking Spaces: {initialTotalSpaces}</span>
           <br />
