@@ -8,7 +8,7 @@ import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc,
 import SearchForm from './SearchForm';
 import UserContext from '../UserContext';
 import { useNavigate } from 'react-router-dom';
-
+import './space.css';
 
 
 const ParkingSlot = () => {
@@ -35,60 +35,82 @@ const ParkingSlot = () => {
   const [slotSets, setSlotSets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const totalParkingSpaces = slotSets.reduce((total, slotSet) => total + slotSet.slots.length, 0);
+const availableParkingSpaces = slotSets.reduce((available, slotSet) => {
+  return available + slotSet.slots.filter(slot => !slot.occupied).length;
+}, 0);
+
   
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user || !user.managementName) {
-        console.log('No user logged in or management name is missing');
-        return;
-      }
-  
-      setIsLoading(true);
-      try {
-        const collectionRef = collection(db, 'establishments');
-        const q = query(collectionRef, where('managementName', '==', user.managementName));
-        const querySnapshot = await getDocs(q);
-  
-        if (!querySnapshot.empty) {
-          const establishmentData = querySnapshot.docs[0].data();
-  
-          let newSlotSets = [];
-  
-          // Check if establishmentData has floorDetails
-          if (Array.isArray(establishmentData.floorDetails) && establishmentData.floorDetails.length > 0) {
-            newSlotSets = establishmentData.floorDetails.map(floor => ({
-              title: floor.floorName,
-              slots: Array.from({ length: parseInt(floor.parkingLots) }, (_, i) => ({ id: i, occupied: false })),
-            }));
-          } else if (establishmentData.totalSlots) {
-            // If there are no floorDetails, use totalSlots to create slots
-            newSlotSets = [{
-              title: 'General Parking',
-              slots: Array.from({ length: parseInt(establishmentData.totalSlots) }, (_, i) => ({ id: i, occupied: false })),
-            }];
-          }
-  
-          // Only update state if we have slot sets to show
-          if (newSlotSets.length > 0) {
-            setSlotSets(newSlotSets);
-          }
-        } else {
-          // No establishment found
-          setSlotSets([]);
+useEffect(() => {
+  const fetchData = async () => {
+    if (!user || !user.managementName) {
+      console.log('No user logged in or management name is missing');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const parkingLogsRef = collection(db, 'logs');
+      const parkingLogsQuery = query(parkingLogsRef, where('managementName', '==', user.managementName), where('timeOut', '==', null));
+      const parkingLogsSnapshot = await getDocs(parkingLogsQuery);
+
+      // Create a map of occupied slots
+      const occupiedSlots = new Map();
+      parkingLogsSnapshot.forEach(doc => {
+        const data = doc.data();
+        occupiedSlots.set(data.slotId, doc.id); // Map slotId to the document ID
+      });
+
+      const collectionRef = collection(db, 'establishments');
+      const q = query(collectionRef, where('managementName', '==', user.managementName));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const establishmentData = querySnapshot.docs[0].data();
+
+        let newSlotSets = [];
+
+        // Check if establishmentData has floorDetails
+        if (Array.isArray(establishmentData.floorDetails) && establishmentData.floorDetails.length > 0) {
+          newSlotSets = establishmentData.floorDetails.map(floor => ({
+            title: floor.floorName,
+            slots: Array.from({ length: parseInt(floor.parkingLots) }, (_, i) => ({ id: i })),
+          }));
+        } else if (establishmentData.totalSlots) {
+          // If there are no floorDetails, use totalSlots to create slots
+          newSlotSets = [{
+            title: 'General Parking',
+            slots: Array.from({ length: parseInt(establishmentData.totalSlots) }, (_, i) => ({ id: i })),
+          }];
         }
-      } catch (error) {
-        // Error fetching data
-        console.error('Error fetching establishment data:', error);
-        setSlotSets([]);
-      } finally {
-        setIsLoading(false);
+
+        // Fetch occupancy data for each slot
+       newSlotSets.forEach(slotSet => {
+          slotSet.slots.forEach(slot => {
+            if (occupiedSlots.has(slot.id)) { // Check if the slot is occupied
+              slot.occupied = true;
+              slot.logDocId = occupiedSlots.get(slot.id); // Save the Firestore document ID for later reference
+            } else {
+              slot.occupied = false;
+            }
+          });
+        });
+
+        setSlotSets(newSlotSets);
+      } else {
+        console.log('No such establishment!');
       }
-    };
-  
-    fetchData();
-  }, [user]);
+    } catch (error) {
+      console.error('Error fetching establishment data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchData();
+}, [user]);
   
   
 
@@ -128,7 +150,7 @@ const ParkingSlot = () => {
   const navigate = useNavigate();
 
   const handleButtonClick = () => {
-  navigate("/reservation");
+  navigate("/Reservation");
  };
 
   
@@ -331,19 +353,8 @@ const ParkingSlot = () => {
        )}
        {slotSets.length === 0 && !isLoading && <div>No parking zones available.</div>}
      </div>
-        <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: `auto repeat(${rows}, 1fr)`,
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
-          gap: '10px',
-          maxWidth: '600px',
-          margin: '0 auto',
-          border: '5px solid black',
-          padding: '25px',
-          maxHeight: '500px',
-          marginBottom: '20px',
-        }}
+        <div className='parkingGrid'
+       
       >
         {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots && slotSets[currentSetIndex].slots.map((slot, index) => (
   <div
@@ -427,9 +438,9 @@ const ParkingSlot = () => {
     </div>
     
       <div style={{textAlign: 'center', fontFamily:'Georgina', fontSize:'15px', marginTop:'10px'}}>
-          <span>  Total Parking Spaces: {initialTotalSpaces}</span>
+          <span>  Total Parking Spaces: {totalParkingSpaces}</span>
           <br />
-          <span> Available Spaces: {zoneAvailableSpaces[currentSetIndex]}</span>
+          <span> Available Spaces: {availableParkingSpaces}</span>
         </div>
         <div style={{ textAlign: 'center', marginTop: '5px', fontSize:'15px'}}>
             <div style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: 'green', marginRight: '10px' }}></div>
