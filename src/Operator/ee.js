@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo} from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Button, Modal, Form} from 'react-bootstrap';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
@@ -40,48 +40,11 @@ const availableParkingSpaces = slotSets.reduce((available, slotSet) => {
   return available + slotSet.slots.filter(slot => !slot.occupied).length;
 }, 0);
 
-// When saving to localStorage, convert Timestamps to strings
-// When saving to localStorage, convert Timestamps to strings
-const saveSlotsToLocalStorage = (managementName, slots) => {
-  try {
-    localStorage.setItem(`slotSets_${managementName}`, JSON.stringify(slots));
-    console.log('Saved slots to local storage for:', managementName);
-  } catch (error) {
-    console.error('Error saving slots to local storage:', error);
-  }
-};
+  
 
-const loadSlotsFromLocalStorage = (managementName) => {
-  try {
-    const savedSlots = localStorage.getItem(`slotSets_${managementName}`);
-    return savedSlots ? JSON.parse(savedSlots) : [];
-  } catch (error) {
-    console.error('Error loading slots from local storage:', error);
-    return [];
-  }
-};
 
 useEffect(() => {
-  // This effect runs once on component mount - it should not have dependencies
-  const managementName = user?.managementName;
-  if (managementName) {
-    const savedSlots = loadSlotsFromLocalStorage(managementName);
-    if (savedSlots.length > 0) {
-      setSlotSets(savedSlots);
-      console.log('Loaded slots from local storage:', savedSlots);
-    } else {
-      fetchData(managementName); // Fetch data if no saved slots found
-    }
-  }
-}, []); 
-
-
-
-// Load slots from local storage when the component mounts
-
-const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
-
-  const fetchData = async (managementName) => {
+  const fetchData = async () => {
     if (!user || !user.managementName) {
       console.log('No user logged in or management name is missing');
       return;
@@ -99,12 +62,11 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
         const data = doc.data();
         occupiedSlots.set(data.slotId, doc.id); // Map slotId to the document ID
       });
-      console.log(parkingLogsSnapshot.docs.map(doc => doc.data()))
 
       const collectionRef = collection(db, 'establishments');
       const q = query(collectionRef, where('managementName', '==', user.managementName));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const establishmentData = querySnapshot.docs[0].data();
 
@@ -123,14 +85,13 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
             slots: Array.from({ length: parseInt(establishmentData.totalSlots) }, (_, i) => ({ id: i })),
           }];
         }
-        console.log('New Slot Sets:', newSlotSets);
 
         // Fetch occupancy data for each slot
-        newSlotSets.forEach((slotSet) => {
-          slotSet.slots.forEach((slot) => {
-            if (occupiedSlots.has(slot.id)) {
+       newSlotSets.forEach(slotSet => {
+          slotSet.slots.forEach(slot => {
+            if (occupiedSlots.has(slot.id)) { // Check if the slot is occupied
               slot.occupied = true;
-              slot.logDocId = occupiedSlots.get(slot.id);
+              slot.logDocId = occupiedSlots.get(slot.id); // Save the Firestore document ID for later reference
             } else {
               slot.occupied = false;
             }
@@ -138,14 +99,6 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
         });
 
         setSlotSets(newSlotSets);
-        saveSlotsToLocalStorage(newSlotSets);
-
-        if (savedSlots.length > 0) {
-          // Data is available in local storage, set it to the state
-          setSlotSets(savedSlots);
-          console.log('Loaded slots from local storage:', savedSlots);
-          return;
-        }
       } else {
         console.log('No such establishment!');
       }
@@ -155,14 +108,10 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
       setIsLoading(false);
     }
   };
+
+  fetchData();
+}, [user]);
   
-  useEffect(() => {
-    // This effect syncs the slotSets state to local storage whenever it changes
-    const managementName = user?.managementName;
-    if (managementName && slotSets.length > 0) {
-      saveSlotsToLocalStorage(managementName, slotSets);
-    }
-  }, [slotSets, user?.managementName]); 
   
 
   
@@ -407,13 +356,13 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
         <div className='parkingGrid'
        
       >
-       {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots.map((slot, index) => (
+        {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots && slotSets[currentSetIndex].slots.map((slot, index) => (
   <div
     key={index}
     style={{
       width: '90px',
       height: '80px',
-      backgroundColor: slot.occupied ? 'red' : 'green', // Set background color based on slot.occupied
+      backgroundColor: slot.occupied ? 'red' : 'green',
       color: 'white',
       display: 'flex',
       justifyContent: 'center',
@@ -422,7 +371,7 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
       marginLeft: '35px',
     }}
     onClick={() => handleSlotClick(index)}
-  >
+    >
     {slot.occupied ? (
       <div>
         <div>{slot.userDetails ? slot.userDetails.carPlateNumber : slot.text}</div>
@@ -432,7 +381,7 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
     )}
   </div>
 ))}
-</div>
+      </div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
   <Modal.Header closeButton>
     <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
