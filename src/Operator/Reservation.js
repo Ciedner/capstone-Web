@@ -16,10 +16,10 @@ const Reservation = () => {
       const querySnapshot = await getDocs(q);
       const reservations = querySnapshot.docs.map(doc => ({
         id: doc.id,
-        name: doc.data().name, // Assuming 'managementName' corresponds to the name to be displayed
+        name: doc.data().name, 
         plateNumber: doc.data().carPlate,
-        floor: doc.data().slotId.charAt(0), // Assuming slotId format is such that the first character is the floor
-        slot: doc.data().slotId.slice(1), // Assuming slotId format is such that the rest is the slot
+        floor: doc.data().slotId.charAt(0), 
+        slot: doc.data().slotId.slice(1), 
         timeOfRequest: new Date(doc.data().timestamp.seconds * 1000).toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: 'numeric' })
       }));
       setReservationRequests(reservations);
@@ -31,26 +31,25 @@ const Reservation = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, currentUser => {
       if (currentUser && user?.managementName) {
-        // The user is logged in. Fetch the reservations corresponding to their managementName.
+        
         fetchReservations(user.managementName);
       } else {
-        // User is signed out or managementName is not available
+
         setReservationRequests([]);
       }
     });
 
-    // Clean up the subscription on unmount
     return () => unsubscribe();
   }, [user?.managementName]);
 
 
   useEffect(() => {
-    // Save reservationRequests to localStorage whenever it changes
+    
     localStorage.setItem('reservationRequests', JSON.stringify(reservationRequests));
   }, [reservationRequests]);
 
   useEffect(() => {
-    // Load history log from localStorage on component mount
+    
     const storedHistoryLog = JSON.parse(localStorage.getItem('historyLog'));
     if (storedHistoryLog) {
       setHistoryLog(storedHistoryLog);
@@ -59,7 +58,6 @@ const Reservation = () => {
   const handleReservation = (accepted, name, plateNumber, floor, slot, timeOfRequest, index) => {
     const status = accepted ? 'Accepted' : 'Declined';
 
-    // Update history log
     const logEntry = {
       status,
       name,
@@ -71,15 +69,12 @@ const Reservation = () => {
 
     setHistoryLog([logEntry, ...historyLog]);
 
-    // Save history log to localStorage
     localStorage.setItem('historyLog', JSON.stringify([logEntry, ...historyLog]));
 
-    // Remove the request from reservationRequests
     const updatedRequests = [...reservationRequests];
     updatedRequests.splice(index, 1);
     setReservationRequests(updatedRequests);
 
-    // Set selected reservation for details display
     setSelectedReservation({
       status,
       name,

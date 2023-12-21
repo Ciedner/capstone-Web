@@ -27,14 +27,14 @@ function Create() {
     const value = e.target.value;
     setNumberOfFloors(value);
 
-    // If "0", prepare to accept parking slots
+ 
     if (value === '0') {
       setFloorDetails([]);
     } else if (value >= 2) {
-      // Create an array for floor details
+      
       setFloorDetails(Array.from({ length: value }, () => ({ floorName: '', parkingLots: '' })));
     } else {
-      // Clear any existing data if the value is not "0" or >= 2
+      
       setFloorDetails([]);
       setNumberOfParkingLots('');
     }
@@ -60,33 +60,33 @@ function Create() {
 
     if (!managementName || !companyAddress || !email || !password || !contact || !parkingPay) {
       alert("Please fill out all fields.");
-      return; // Stop the function if validation fails
+      return; 
     }
   
-    // Check if the document is uploaded
+    
     if (!selectedFiles) {
       alert("Please upload a document.");
-      return; // Stop the function if validation fails
+      return; 
     }
   
-    // Initialize total slots as 0.
+    
     let totalSlots = 0;
   
-    // If the number of floors is 0, parse the individual number of parking lots.
+    
     if (numberOfFloors === '0' || numberOfFloors === '1') {
       if (!numberOfParkingLots) {
         alert("Please enter the number of parking slots.");
-        return; // Stop the function if validation fails
+        return;
       }
-      totalSlots = parseInt(numberOfParkingLots, 10) || 0; // Ensure the value is a number.
+      totalSlots = parseInt(numberOfParkingLots, 10) || 0; 
     } else {
       if (floorDetails.some(floor => !floor.floorName || !floor.parkingLots)) {
         alert("Please fill out all floor details.");
-        return; // Stop the function if validation fails
+        return; 
       }
-      // For 2 or more floors, sum up the parking lots for each floor.
+      
       totalSlots = floorDetails.reduce((acc, curr) => {
-        return acc + (parseInt(curr.parkingLots, 10) || 0); // Ensure each value is a number.
+        return acc + (parseInt(curr.parkingLots, 10) || 0); 
       }, 0);
     }
   
@@ -101,7 +101,7 @@ function Create() {
   
       const fileURLs = await Promise.all(uploadPromises);
 
-      // Construct the document to be saved
+      
       const establishmentData = {
         email,
         companyAddress,
@@ -109,19 +109,19 @@ function Create() {
         managementName,
         parkingPay,
         password,
-        numberOfFloors: parseInt(numberOfFloors, 10), // Ensure this is a number
+        numberOfFloors: parseInt(numberOfFloors, 10), 
         floorDetails,
-        totalSlots, // Save the calculated total slots
+        totalSlots, 
         isApproved: false,
-        fileURLs, // Save file URLs
+        fileURLs, 
       };
   
-      // Save to pendingEstablishments in Firestore
+      
       await setDoc(doc(db, "pendingEstablishments", user.uid), establishmentData);
   
       alert('We are currently processing your account. Please wait for admin approval. Thank you!');
       navigate("/");
-      // You may also want to reset the form fields here if necessary
+      
     } catch (error) {
       console.error('Error creating account:', error);
       alert(error.message);
@@ -137,7 +137,7 @@ function Create() {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'space-around', // This will put some space between your containers
+    justifyContent: 'space-around', 
     minHeight: '100vh',
     backgroundColor: '#e6e6fa',
     padding: '20px',
@@ -146,10 +146,10 @@ function Create() {
   
 
   const formContainerStyle = {
-    backgroundColor: '#ffffff', // Pure white for clarity
+    backgroundColor: '#ffffff', 
     padding: '40px',
     borderRadius: '15px',
-    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', // Softer shadow
+    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', 
     width: '450px',
     marginTop: '30px',
     width: '40%',
@@ -157,28 +157,28 @@ function Create() {
   };
 
   const inputGroupStyle = {
-    marginBottom: '20px', // More space between inputs
+    marginBottom: '20px', 
   };
 
   const inputStyle = {
     width: '100%',
     padding: '12px',
-    border: '1px solid #ddd', // Lighter border
-    borderRadius: '8px', // More rounded corners
+    border: '1px solid #ddd', 
+    borderRadius: '8px', 
     fontSize: '16px',
-    color: '#333', // Darker font for contrast
+    color: '#333', 
   };
 
   const buttonStyle = {
     width: '100%',
     padding: '15px',
-    backgroundColor: '#32cd32', // Lively green button
+    backgroundColor: '#32cd32', 
     color: 'white',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
     fontSize: '18px',
-    transition: 'background-color 0.3s', // Smooth transition for hover effect
+    transition: 'background-color 0.3s', 
   };
 
   const navbarStyle = {
@@ -186,7 +186,7 @@ function Create() {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '20px',
-    backgroundColor: '#333', // Dark grey for a softer look
+    backgroundColor: '#333', 
     color: 'white',
     width: '100%',
   };
@@ -197,13 +197,13 @@ function Create() {
   };
 
   const additionalContainerStyle = {
-    backgroundColor: '#ffffff', // Consistent with formContainerStyle
+    backgroundColor: '#ffffff', 
     padding: '30px',
     borderRadius: '15px',
-    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', // Consistent shadow effect
+    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', 
     width: '450px',
-    marginTop: '20px', // Space from the previous container
-    marginBottom: '20px', // Space to the bottom
+    marginTop: '20px',
+    marginBottom: '20px', 
     width: '30%',
     minHeight: '500px',
   };
@@ -215,7 +215,7 @@ function Create() {
     borderRadius: '8px',
     fontSize: '16px',
     color: '#333',
-    marginBottom: '20px', // Space after the file input
+    marginBottom: '20px', 
   };
 
 

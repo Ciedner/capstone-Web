@@ -21,7 +21,7 @@ function AdminPage() {
             setParkingSeeker(userList);
           } catch (error) {
             console.error("Error fetching parking seeker:", error);
-            // Handle the error appropriately in your application
+            
           }
         };
     
@@ -39,7 +39,7 @@ function AdminPage() {
             setAgent(agentsList);
           } catch (error) {
             console.error("Error fetching agents:", error);
-            // Handle the error appropriately in your application
+            
           }
         };
     
@@ -57,7 +57,7 @@ function AdminPage() {
         setEstablishments(establishmentsList);
       } catch (error) {
         console.error("Error fetching establishments:", error);
-        // Handle the error appropriately in your application
+        
       }
     };
 
@@ -70,7 +70,7 @@ function AdminPage() {
         { title: 'Establishment Accounts', value: `${establishments.length} Registered`, imgSrc: 'check.png'},
         { title: 'Parking Seekers', value: `${parkingSeeker.length} Registered`, imgSrc: 'check.png'},
         { title: 'Agents Accounts', value: `${agent.length} Registered`, imgSrc: 'check.png'}
-        // ... other summary cards
+        
     ]);
 }, [pendingAccounts]);
 
@@ -93,22 +93,19 @@ function AdminPage() {
         const accountSnapshot = await getDoc(accountRef);
         const accountData = accountSnapshot.data();
       
-        // Move to establishments
+    
         await setDoc(doc(db, "establishments", accountId), {
           ...accountData,
           createdAt: new Date(),
           isApproved: true
         });
       
-        // Delete from pendingEstablishments
         await deleteDoc(accountRef);
       
-        // Update the local state to remove the approved account
         setPendingAccounts(pendingAccounts.filter(account => account.id !== accountId));
       };
 
       const handleDecline = async (accountId) => {
-        //to be updated! No function yet
       }
       
       
@@ -125,9 +122,11 @@ function AdminPage() {
     />
     <span className="admin-text">Admin</span>
   </div>
-        <p><a href='FetchEstablishments'>Establishment List</a></p>
-        <p><a href='FetchParkingUsers'>Parking Seeker List</a></p>
-        <p><a href='FetchAgents'>Agents List</a></p>
+  <p><img src="estb.jpg" alt="Parking Seeker Icon" className="icon" /><a href ='FetchEstablishments' style={{ color: 'white', textDecoration: 'none' }}> Establishment List</a></p>
+  <p><img src="parkingseeker.png" alt="Parking Seeker Icon" className="icon" /><a href ='FetchParkingUsers' style={{ color: 'white', textDecoration: 'none' }}> Parking Seeker List</a></p>
+
+  <p><img src="agent.jpg" alt="Parking Seeker Icon" className="icon" /><a href ='FetchAgents' style={{ color: 'white', textDecoration: 'none' }}> Agents List</a></p>
+       
       </div>
       <div className="main-content">
         <div className="header">Good day, Mr. Berto!</div>
@@ -146,16 +145,45 @@ function AdminPage() {
           <h3 className='pending'>Pending Establishment Accounts</h3>
           {pendingAccounts.map(account => (
             <div key={account.id} className="pending-sub">
-              <div className="establishment-email">{account.email}
-              <Link to={`/email/${account.id}`}>
-                {account.email}
-              </Link>
-              </div>
-              <div className="establishment-management">{account.managementName}</div>
-              <div className="establishment-contact">{account.contact}</div>
-              <div className="establishment-address">{account.companyAddress}</div>
-              <div className="establishment-address">{account.numberOfFloors}</div>
-              <div className="establishment-parkingLots">{account.totalSlots}</div>
+              <div className="info-section">
+                                    <div className="title">Email</div>
+                                    <div className="value">
+                                    <Link to={`/email/${account.id}`}>
+                                            <span className="highlight-background">{account.email}</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                                <div className="info-section">
+                                    <div className="title">Management name</div>
+                                  
+                                    <div className="value">
+                                        <span className="highlight-background">{account.managementName}</span>
+                                    </div>
+                                </div>
+                                <div className="info-section">
+                                    <div className="title">Contact number</div>
+                                    <div className="value">
+                                        <span className="highlight-background">{account.managementName}</span>
+                                    </div>
+                                </div>
+                                <div className="info-section">
+                                    <div className="title">Address</div>
+                                    <div className="value">
+                                    <span className="highlight-background">{account.companyAddress}</span>
+                                </div>
+                                </div>
+                                <div className="info-section">
+                                    <div className="title">Number of Floors</div>
+                                    <div className="value">
+                                    <span className="highlight-background">{account.numberOfFloors}</span>
+                                    </div>
+                                </div>
+                                <div className="info-section">
+                                    <div className="title">Total Slots</div>
+                                    <div className="value">
+                                    <span className="highlight-background">{account.totalSlots}</span>
+                                </div>
+                                </div>
               <div><button onClick={() => handleApprove(account.id)} className="approve-button">Approve</button></div>
               <div><button onClick={() => handleDecline(account.id)} className="decline-button">Decline</button></div>
             </div>

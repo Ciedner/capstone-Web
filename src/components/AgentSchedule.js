@@ -139,7 +139,7 @@ const [filteredEmails, setFilteredEmails] = useState([]);
           setEventTimeIn('00:00');
           setEventTimeOut('00:00');
   
-          // Close the modal
+       
           setShowModal(false);
         })
         .catch((error) => {
@@ -151,7 +151,7 @@ const [filteredEmails, setFilteredEmails] = useState([]);
 
   const handleEmailClick = (email) => {
     const agent = filteredAgents.find(agent => agent.email === email);
-    console.log(agent); // This should log the agent object
+    console.log(agent); 
     if (agent) {
 
       setEmailAndName(email, agent.name);
@@ -164,7 +164,7 @@ const [filteredEmails, setFilteredEmails] = useState([]);
       return;
     }
   
-    // Fetch agents from Firestore where the email starts with the input
+    
     const querySnapshot = await getDocs(query(collection(db, "agents"), where("email", ">=", input), where("email", "<=", input + '\uf8ff')));
     const matchedAgents = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -176,8 +176,7 @@ const [filteredEmails, setFilteredEmails] = useState([]);
 
   const [filteredAgents, setFilteredAgents] = useState([]);
   const setEmailAndName = (email, name, lName) => {
-    console.log('Setting email and name:', email, name, lName); // Check if this gets logged when you click on an email
-    setEventEmail(email);
+    console.log('Setting email and name:', email, name, lName);
     setEventAgentName(name);
     setEventAgentName1(lName);
     setFilteredAgents([]); // Clear suggestions

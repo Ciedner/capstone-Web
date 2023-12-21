@@ -4,7 +4,7 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc} from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc, onSnapshot} from 'firebase/firestore';
 import SearchForm from './SearchForm';
 import UserContext from '../UserContext';
 import { useNavigate } from 'react-router-dom';
@@ -81,35 +81,43 @@ useEffect(() => {
 
 const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
 
-  const fetchData = async (managementName) => {
-    if (!user || !user.managementName) {
-      console.log('No user logged in or management name is missing');
-      return;
-    }
+const fetchData = async (managementName) => {
+  if (!user || !user.managementName) {
+    console.log('No user logged in or management name is missing');
+    return;
+  }
 
-    setIsLoading(true);
-    try {
-      const parkingLogsRef = collection(db, 'logs');
-      const parkingLogsQuery = query(parkingLogsRef, where('managementName', '==', user.managementName), where('timeOut', '==', null));
-      const parkingLogsSnapshot = await getDocs(parkingLogsQuery);
+  let occupiedSlots = new Map(); // Declare occupiedSlots here
+
+  try {
+    // Subscribe to real-time updates for parking logs
+    const parkingLogsRef = collection(db, 'logs');
+    const parkingLogsQuery = query(parkingLogsRef, where('managementName', '==', user.managementName), where('timeOut', '==', null));
+  
+    const unsubLogs = onSnapshot(parkingLogsQuery, (snapshot) => {
+      const newLogs = snapshot.docs.map(doc => doc.data());
+      // processLogs(newLogs); // Assume processLogs is a function you want to call
 
       // Create a map of occupied slots
-      const occupiedSlots = new Map();
-      parkingLogsSnapshot.forEach(doc => {
+      occupiedSlots = new Map();
+      snapshot.forEach(doc => {
         const data = doc.data();
         occupiedSlots.set(data.slotId, doc.id); // Map slotId to the document ID
       });
-      console.log(parkingLogsSnapshot.docs.map(doc => doc.data()))
+      console.log(snapshot.docs.map(doc => doc.data()));
+    });
 
-      const collectionRef = collection(db, 'establishments');
-      const q = query(collectionRef, where('managementName', '==', user.managementName));
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        const establishmentData = querySnapshot.docs[0].data();
-
+    // Subscribe to real-time updates for establishments
+    const collectionRef = collection(db, 'establishments');
+    const q = query(collectionRef, where('managementName', '==', user.managementName));
+  
+    const unsubEstablishments = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const newEstablishmentData = snapshot.docs.map(doc => doc.data());
+        const establishmentData = snapshot.docs[0].data();
+  
         let newSlotSets = [];
-
+  
         // Check if establishmentData has floorDetails
         if (Array.isArray(establishmentData.floorDetails) && establishmentData.floorDetails.length > 0) {
           newSlotSets = establishmentData.floorDetails.map(floor => ({
@@ -124,7 +132,7 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
           }];
         }
         console.log('New Slot Sets:', newSlotSets);
-
+  
         // Fetch occupancy data for each slot
         newSlotSets.forEach((slotSet) => {
           slotSet.slots.forEach((slot) => {
@@ -136,25 +144,27 @@ const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
             }
           });
         });
-
+  
         setSlotSets(newSlotSets);
         saveSlotsToLocalStorage(newSlotSets);
-
+  
         if (savedSlots.length > 0) {
           // Data is available in local storage, set it to the state
           setSlotSets(savedSlots);
           console.log('Loaded slots from local storage:', savedSlots);
-          return;
         }
       } else {
         console.log('No such establishment!');
       }
-    } catch (error) {
-      console.error('Error fetching establishment data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
   
   useEffect(() => {
     // This effect syncs the slotSets state to local storage whenever it changes
