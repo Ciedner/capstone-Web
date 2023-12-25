@@ -37,7 +37,7 @@ export function submitFeedback(newFeedback) {
   return new Promise((resolve, reject) => {
     addDoc(collection(db, 'feedback'), newFeedback)
       .then(docRef => {
-        resolve(docRef.id); // Returns the new document ID
+        resolve(docRef.id); 
       })
       .catch(error => {
         reject(error);

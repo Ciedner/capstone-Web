@@ -45,18 +45,18 @@ function OperatorDashboard() {
   };
 
   useEffect(() => {
-    // Async function to fetch the establishment's data
+    
     const fetchEstablishmentData = async () => {
       try {
-        // Query the 'establishments' collection for documents where 'managementName' matches the agent's 'managementName'
+        
         const q = query(collection(db, 'establishments'), where('managementName', '==', user.managementName));
         const querySnapshot = await getDocs(q);
   
-        console.log(`Found ${querySnapshot.docs.length} documents`); // Debug how many documents were found
+        console.log(`Found ${querySnapshot.docs.length} documents`); 
   
         if (!querySnapshot.empty) {
-          const establishmentData = querySnapshot.docs[0].data(); // Get the first document's data
-          console.log('Establishment Data:', establishmentData); // Log the data to see what you received
+          const establishmentData = querySnapshot.docs[0].data(); 
+          console.log('Establishment Data:', establishmentData); 
           setParkingPay(establishmentData.parkingPay);
           setTotalSlots(establishmentData.totalSlots);
         } else {
@@ -75,10 +75,10 @@ function OperatorDashboard() {
   useEffect(() => {
     const fetchParkingLogs = async () => {
       try {
-        // Assuming you have a way to get the current user's managementName
+        
         const currentUserManagementName = user.managementName;
         const logsCollectionRef = collection(db, 'logs');
-        // Create a query against the collection.
+        
         const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
   
         const querySnapshot = await getDocs(q);
@@ -86,7 +86,7 @@ function OperatorDashboard() {
         querySnapshot.forEach((doc) => {
           logs.push({ id: doc.id, ...doc.data() });
         });
-        setParkingLogs(logs);  // Set the fetched logs into the state
+        setParkingLogs(logs);  
         const totalUser = logs.length;
         setTotalUsers(totalUser);
       } catch (error) {
@@ -95,7 +95,7 @@ function OperatorDashboard() {
     };
 
   
-    // Initial fetch
+   
     if (user && user.managementName) {
       fetchParkingLogs();
     }

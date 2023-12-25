@@ -44,7 +44,6 @@ function ForgotPassword() {
       const user = auth.currentUser;
       await user.updatePassword(newPassword);
 
-      // Update Firestore to log the action (not the password)
       const userDocRef = db.collection('agents').doc(user.email);
       const establishmentDocRef = db.collection('establishments').doc(user.email);
       await userDocRef.update({

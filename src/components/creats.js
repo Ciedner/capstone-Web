@@ -32,12 +32,12 @@ function Create() {
         managementName,
         parkingPay,
         password,
-        isApproved: false, // This can be omitted as it's pending by default
+        isApproved: false, 
       });
   
     alert('We are currently processing your account. Please wait for admins approval. Thank you!');
     navigate("/");
-      // Reset form fields and navigate as needed
+      
     } catch (error) {
       console.error('Error creating account:', error);
       alert(error.message);

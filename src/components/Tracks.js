@@ -45,16 +45,16 @@ const App = () => {
   useEffect(() => {
     const fetchParkingLogs = async () => {
       if (!user || !user.managementName) {
-        // If user details are not available, don't fetch and set loading to false
+        
         setLoading(false);
         return;
       }
-      setLoading(true); // Start loading before the fetch begins
+      setLoading(true); 
       try {
-        // Assuming you have a way to get the current user's managementName
+        
         const currentUserManagementName = user.managementName;
         const logsCollectionRef = collection(db, 'logs');
-        // Create a query against the collection.
+        
         const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
   
         const querySnapshot = await getDocs(q);
@@ -62,17 +62,17 @@ const App = () => {
         querySnapshot.forEach((doc) => {
           logs.push({ id: doc.id, ...doc.data() });
         });
-        setParkingLogs(logs);  // Set the fetched logs into the state
+        setParkingLogs(logs);  
       } catch (error) {
         console.error("Error fetching parking logs: ", error);
       }
       finally {
-        setLoading(false); // Stop loading regardless of the result
+        setLoading(false); 
       }
     };
 
   
-    // Initial fetch
+    
     if (user && user.managementName) {
       fetchParkingLogs();
     }

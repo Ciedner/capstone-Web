@@ -75,10 +75,10 @@ const Establishment = () => {
   
     const fetchParkingLogs = async () => {
       try {
-        // Assuming you have a way to get the current user's managementName
+       
         const currentUserManagementName = user.managementName;
         const logsCollectionRef = collection(db, 'logs');
-        // Create a query against the collection.
+        
         const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
   
         const querySnapshot = await getDocs(q);
@@ -87,7 +87,6 @@ const Establishment = () => {
           logs.push({ id: doc.id, ...doc.data() });
         });
   
-        // Sort and slice the logs as before
         const sortedLogs = logs.sort((a, b) => new Date(b.timeIn) - new Date(a.timeIn)).slice(0, 3);
         console.log('Logs fetched:', sortedLogs);
         setParkingLogs(sortedLogs);
@@ -96,13 +95,10 @@ const Establishment = () => {
       }
     };
   
-    // Initial fetch
     fetchParkingLogs();
     
-    // Set an interval to fetch logs regularly
     interval = setInterval(fetchParkingLogs, updateInterval);
   
-    // Clear interval on cleanup
     return () => {
       clearInterval(interval);
     };
@@ -111,10 +107,8 @@ const Establishment = () => {
   useEffect(() => {
     const fetchParkingLogs = async () => {
       try {
-        // Assuming you have a way to get the current user's managementName
         const currentUserManagementName = user.managementName;
         const logsCollectionRef = collection(db, 'logs');
-        // Create a query against the collection.
         const q = query(logsCollectionRef, where("managementName", "==", currentUserManagementName));
   
         const querySnapshot = await getDocs(q);
@@ -122,7 +116,7 @@ const Establishment = () => {
         querySnapshot.forEach((doc) => {
           logs.push({ id: doc.id, ...doc.data() });
         });
-        setParkingLogs(logs);  // Set the fetched logs into the state
+        setParkingLogs(logs);  
         const totalUser = logs.length;
         setTotalUsers(totalUser);
       } catch (error) {
@@ -131,7 +125,6 @@ const Establishment = () => {
     };
 
   
-    // Initial fetch
     if (user && user.managementName) {
       fetchParkingLogs();
     }
@@ -140,11 +133,9 @@ const Establishment = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Check if user is logged in
         if (auth.currentUser) {
           const userId = auth.currentUser.uid;
 
-          // Fetch user data from Firestore
           const doc = await db.collection("establishments").doc(userId).get();
 
           if (doc.exists) {

@@ -179,24 +179,22 @@ const [filteredEmails, setFilteredEmails] = useState([]);
     console.log('Setting email and name:', email, name, lName);
     setEventAgentName(name);
     setEventAgentName1(lName);
-    setFilteredAgents([]); // Clear suggestions
+    setFilteredAgents([]); 
   };
   
 
   useEffect(() => {
-    // Suppose you load events from Firebase when the component mounts
-    // Here is how you can filter them before setting them to state.
+    
     const loadEvents = async () => {
-      // ... your code to load events from Firestore
-      // For example:
+      
       const eventsCollection = collection(db, "schedule");
       const eventsSnapshot = await getDocs(eventsCollection);
       const loadedEvents = eventsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       
-      // Filter out events that have already ended.
+      
       const currentEvents = loadedEvents.filter(event => {
         const now = new Date();
-        return new Date(event.end.seconds * 1000) > now; // Assuming event.end is a Firestore Timestamp
+        return new Date(event.end.seconds * 1000) > now; 
       });
   
       setEvents(currentEvents);
@@ -211,8 +209,8 @@ const [filteredEmails, setFilteredEmails] = useState([]);
   
     const clickedEventDetails = {
       title: clickedEvent.title,
-      start: clickedEvent.start.getTime(), // Convert to timestamp
-      end: clickedEvent.end.getTime(), // Convert to timestamp
+      start: clickedEvent.start.getTime(), 
+      end: clickedEvent.end.getTime(), 
       email: clickedEvent.extendedProps.email,
       name: clickedEvent.extendedProps.name,
     };
@@ -403,7 +401,7 @@ const [filteredEmails, setFilteredEmails] = useState([]);
       placeholder="Agent name will be set automatically"
       value={`${eventAgentName} ${eventAgentName1}`}
       onChange={(e) => setEventAgentName(e.target.value)}
-      disabled={true} // Optional: make it read-only if you don't want manual edits
+      disabled={true} 
     />
 </Form.Group>
           </Form>

@@ -17,7 +17,7 @@ const FetchEstablishments = () => {
         setEstablishments(establishmentsList);
       } catch (error) {
         console.error("Error fetching establishments:", error);
-        // Handle the error appropriately in your application
+        
       }
     };
 
@@ -92,7 +92,7 @@ const FetchEstablishments = () => {
                       </span>
                     </div>
                   </li>
-                  {index < establishments.length - 1 && <hr />} {/* Add a line after each item, except the last one */}
+                  {index < establishments.length - 1 && <hr />} { }
                 </React.Fragment>
               ))}
             </ul>

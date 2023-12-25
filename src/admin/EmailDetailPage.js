@@ -16,9 +16,9 @@ function EmailDetailPage() {
           const docSnap = await getDoc(docRef);
   
           if (docSnap.exists()) {
-            const fileURLs = docSnap.data().fileURLs; // Use the correct field name
+            const fileURLs = docSnap.data().fileURLs; 
             if (Array.isArray(fileURLs)) {
-              setImages(fileURLs); // Set the image URLs
+              setImages(fileURLs);
             }
           } else {
             console.log("No such document!");
@@ -33,7 +33,7 @@ function EmailDetailPage() {
   
     return (
         <div className="email-detail-page">
-          <h2>Images associated with the document of {email}</h2> {/* Displaying the email */}
+          <h2>Images associated with the document of {email}</h2> { }
           <div className="email-images-container">
             {images.length > 0 ? (
               images.map((imgUrl, index) => (
@@ -54,4 +54,3 @@ function EmailDetailPage() {
     }
   
   export default EmailDetailPage;
-  

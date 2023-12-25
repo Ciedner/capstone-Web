@@ -40,8 +40,6 @@ const availableParkingSpaces = slotSets.reduce((available, slotSet) => {
   return available + slotSet.slots.filter(slot => !slot.occupied).length;
 }, 0);
 
-// When saving to localStorage, convert Timestamps to strings
-// When saving to localStorage, convert Timestamps to strings
 const saveSlotsToLocalStorage = (managementName, slots) => {
   try {
     localStorage.setItem(`slotSets_${managementName}`, JSON.stringify(slots));
@@ -62,7 +60,6 @@ const loadSlotsFromLocalStorage = (managementName) => {
 };
 
 useEffect(() => {
-  // This effect runs once on component mount - it should not have dependencies
   const managementName = user?.managementName;
   if (managementName) {
     const savedSlots = loadSlotsFromLocalStorage(managementName);
@@ -70,14 +67,11 @@ useEffect(() => {
       setSlotSets(savedSlots);
       console.log('Loaded slots from local storage:', savedSlots);
     } else {
-      fetchData(managementName); // Fetch data if no saved slots found
+      fetchData(managementName); 
     }
   }
 }, []); 
 
-
-
-// Load slots from local storage when the component mounts
 
 const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
 
@@ -87,27 +81,23 @@ const fetchData = async (managementName) => {
     return;
   }
 
-  let occupiedSlots = new Map(); // Declare occupiedSlots here
+  let occupiedSlots = new Map(); 
 
   try {
-    // Subscribe to real-time updates for parking logs
     const parkingLogsRef = collection(db, 'logs');
     const parkingLogsQuery = query(parkingLogsRef, where('managementName', '==', user.managementName), where('timeOut', '==', null));
   
     const unsubLogs = onSnapshot(parkingLogsQuery, (snapshot) => {
       const newLogs = snapshot.docs.map(doc => doc.data());
-      // processLogs(newLogs); // Assume processLogs is a function you want to call
 
-      // Create a map of occupied slots
       occupiedSlots = new Map();
       snapshot.forEach(doc => {
         const data = doc.data();
-        occupiedSlots.set(data.slotId, doc.id); // Map slotId to the document ID
+        occupiedSlots.set(data.slotId, doc.id); 
       });
       console.log(snapshot.docs.map(doc => doc.data()));
     });
 
-    // Subscribe to real-time updates for establishments
     const collectionRef = collection(db, 'establishments');
     const q = query(collectionRef, where('managementName', '==', user.managementName));
   
@@ -118,14 +108,12 @@ const fetchData = async (managementName) => {
   
         let newSlotSets = [];
   
-        // Check if establishmentData has floorDetails
         if (Array.isArray(establishmentData.floorDetails) && establishmentData.floorDetails.length > 0) {
           newSlotSets = establishmentData.floorDetails.map(floor => ({
             title: floor.floorName,
             slots: Array.from({ length: parseInt(floor.parkingLots) }, (_, i) => ({ id: i })),
           }));
         } else if (establishmentData.totalSlots) {
-          // If there are no floorDetails, use totalSlots to create slots
           newSlotSets = [{
             title: 'General Parking',
             slots: Array.from({ length: parseInt(establishmentData.totalSlots) }, (_, i) => ({ id: i })),
@@ -133,7 +121,6 @@ const fetchData = async (managementName) => {
         }
         console.log('New Slot Sets:', newSlotSets);
   
-        // Fetch occupancy data for each slot
         newSlotSets.forEach((slotSet) => {
           slotSet.slots.forEach((slot) => {
             if (occupiedSlots.has(slot.id)) {
@@ -149,7 +136,6 @@ const fetchData = async (managementName) => {
         saveSlotsToLocalStorage(newSlotSets);
   
         if (savedSlots.length > 0) {
-          // Data is available in local storage, set it to the state
           setSlotSets(savedSlots);
           console.log('Loaded slots from local storage:', savedSlots);
         }
@@ -167,21 +153,16 @@ const fetchData = async (managementName) => {
 
   
   useEffect(() => {
-    // This effect syncs the slotSets state to local storage whenever it changes
     const managementName = user?.managementName;
     if (managementName && slotSets.length > 0) {
       saveSlotsToLocalStorage(managementName, slotSets);
     }
   }, [slotSets, user?.managementName]); 
   
-
-  
-  
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [zoneAvailableSpaces, setZoneAvailableSpaces] = useState(
     initialSlotSets.map(zone => zone.slots.length)
   );
-
 
   const [recordFound, setRecordFound] = useState(true); 
   const [userFound, setUserFound] = useState(true);
@@ -213,8 +194,6 @@ const fetchData = async (managementName) => {
   const handleButtonClick = () => {
   navigate("/Reservation");
  };
-
-  
 
   const rows = 5;
   const cols = 3;
@@ -312,7 +291,6 @@ const fetchData = async (managementName) => {
     setErrorMessage("");
   };
   
-
   const handleSlotClick = (index) => {
     setSelectedSlot(index);
     setShowModal(true);

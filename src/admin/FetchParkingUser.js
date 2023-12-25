@@ -17,7 +17,7 @@ const FetchParkingUsers = () => {
         setParkingSeeker(userList);
       } catch (error) {
         console.error('Error fetching parking seeker:', error);
-        // Handle the error appropriately in your application
+        
       }
     };
 

@@ -74,8 +74,8 @@ export default function EditButton() {
       const imageRef = ref(storage, `images/${imageUpload.name + v4()}`);
       uploadBytes(imageRef, imageUpload).then((snapshot) => {
         getDownloadURL(snapshot.ref).then((url) => {
-          setProfileImageUrl(url); // Update the state to show the new image
-          saveProfileImageUrl(url); // Save the image URL to Firestore
+          setProfileImageUrl(url); 
+          saveProfileImageUrl(url); 
         });
       });
     }
@@ -94,11 +94,10 @@ export default function EditButton() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Check if user is logged in
+
         if (auth.currentUser) {
           const userId = auth.currentUser.uid;
 
-          // Fetch user data from Firestore
           const doc = await db.collection("agents").doc(userId).get();
 
           if (doc.exists) {
@@ -217,7 +216,9 @@ export default function EditButton() {
             <MDBCard>
             <div className="rounded-top text-white d-flex flex-row" style={{ backgroundColor: '#000', height: '200px' }}>
             <div className="ms-4 mt-5 d-flex flex-column" style={{ width: '120px' }}>
-                  {/* Image display */}
+                  {
+                    
+                  }
                  <MDBCardImage 
               src={profileImageUrl || "default_placeholder.jpg"}
               alt="Profile"

@@ -162,7 +162,7 @@ function AdminPage() {
                                 </div>
                                 <div className="info-section">
                                     <div className="title">Contact number</div>
-                                    <div className="value">
+                                    <div class  Name="value">
                                         <span className="highlight-background">{account.managementName}</span>
                                     </div>
                                 </div>
