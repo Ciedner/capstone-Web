@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext, useMemo} from 'react';
 import { Button, Modal, Form} from 'react-bootstrap';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc} from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc, onSnapshot} from 'firebase/firestore';
 import SearchForm from './SearchForm';
 import UserContext from '../UserContext';
 import { useNavigate } from 'react-router-dom';
@@ -40,87 +40,129 @@ const availableParkingSpaces = slotSets.reduce((available, slotSet) => {
   return available + slotSet.slots.filter(slot => !slot.occupied).length;
 }, 0);
 
-  
+const saveSlotsToLocalStorage = (managementName, slots) => {
+  try {
+    localStorage.setItem(`slotSets_${managementName}`, JSON.stringify(slots));
+    console.log('Saved slots to local storage for:', managementName);
+  } catch (error) {
+    console.error('Error saving slots to local storage:', error);
+  }
+};
 
+const loadSlotsFromLocalStorage = (managementName) => {
+  try {
+    const savedSlots = localStorage.getItem(`slotSets_${managementName}`);
+    return savedSlots ? JSON.parse(savedSlots) : [];
+  } catch (error) {
+    console.error('Error loading slots from local storage:', error);
+    return [];
+  }
+};
 
 useEffect(() => {
-  const fetchData = async () => {
-    if (!user || !user.managementName) {
-      console.log('No user logged in or management name is missing');
-      return;
+  const managementName = user?.managementName;
+  if (managementName) {
+    const savedSlots = loadSlotsFromLocalStorage(managementName);
+    if (savedSlots.length > 0) {
+      setSlotSets(savedSlots);
+      console.log('Loaded slots from local storage:', savedSlots);
+    } else {
+      fetchData(managementName); 
     }
+  }
+}, []); 
 
-    setIsLoading(true);
-    try {
-      const parkingLogsRef = collection(db, 'logs');
-      const parkingLogsQuery = query(parkingLogsRef, where('managementName', '==', user.managementName), where('timeOut', '==', null));
-      const parkingLogsSnapshot = await getDocs(parkingLogsQuery);
 
-      // Create a map of occupied slots
-      const occupiedSlots = new Map();
-      parkingLogsSnapshot.forEach(doc => {
+const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
+
+const fetchData = async (managementName) => {
+  if (!user || !user.managementName) {
+    console.log('No user logged in or management name is missing');
+    return;
+  }
+
+  let occupiedSlots = new Map(); 
+
+  try {
+    const parkingLogsRef = collection(db, 'logs');
+    const parkingLogsQuery = query(parkingLogsRef, where('managementName', '==', user.managementName), where('timeOut', '==', null));
+  
+    const unsubLogs = onSnapshot(parkingLogsQuery, (snapshot) => {
+      const newLogs = snapshot.docs.map(doc => doc.data());
+
+      occupiedSlots = new Map();
+      snapshot.forEach(doc => {
         const data = doc.data();
-        occupiedSlots.set(data.slotId, doc.id); // Map slotId to the document ID
+        occupiedSlots.set(data.slotId, doc.id); 
       });
+      console.log(snapshot.docs.map(doc => doc.data()));
+    });
 
-      const collectionRef = collection(db, 'establishments');
-      const q = query(collectionRef, where('managementName', '==', user.managementName));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const establishmentData = querySnapshot.docs[0].data();
-
+    const collectionRef = collection(db, 'establishments');
+    const q = query(collectionRef, where('managementName', '==', user.managementName));
+  
+    const unsubEstablishments = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const newEstablishmentData = snapshot.docs.map(doc => doc.data());
+        const establishmentData = snapshot.docs[0].data();
+  
         let newSlotSets = [];
-
-        // Check if establishmentData has floorDetails
+  
         if (Array.isArray(establishmentData.floorDetails) && establishmentData.floorDetails.length > 0) {
           newSlotSets = establishmentData.floorDetails.map(floor => ({
             title: floor.floorName,
             slots: Array.from({ length: parseInt(floor.parkingLots) }, (_, i) => ({ id: i })),
           }));
         } else if (establishmentData.totalSlots) {
-          // If there are no floorDetails, use totalSlots to create slots
           newSlotSets = [{
             title: 'General Parking',
             slots: Array.from({ length: parseInt(establishmentData.totalSlots) }, (_, i) => ({ id: i })),
           }];
         }
-
-        // Fetch occupancy data for each slot
-       newSlotSets.forEach(slotSet => {
-          slotSet.slots.forEach(slot => {
-            if (occupiedSlots.has(slot.id)) { // Check if the slot is occupied
+        console.log('New Slot Sets:', newSlotSets);
+  
+        newSlotSets.forEach((slotSet) => {
+          slotSet.slots.forEach((slot) => {
+            if (occupiedSlots.has(slot.id)) {
               slot.occupied = true;
-              slot.logDocId = occupiedSlots.get(slot.id); // Save the Firestore document ID for later reference
+              slot.logDocId = occupiedSlots.get(slot.id);
             } else {
               slot.occupied = false;
             }
           });
         });
-
+  
         setSlotSets(newSlotSets);
+        saveSlotsToLocalStorage(newSlotSets);
+  
+        if (savedSlots.length > 0) {
+          setSlotSets(savedSlots);
+          console.log('Loaded slots from local storage:', savedSlots);
+        }
       } else {
         console.log('No such establishment!');
       }
-    } catch (error) {
-      console.error('Error fetching establishment data:', error);
-    } finally {
-      setIsLoading(false);
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  
+  useEffect(() => {
+    const managementName = user?.managementName;
+    if (managementName && slotSets.length > 0) {
+      saveSlotsToLocalStorage(managementName, slotSets);
     }
-  };
-
-  fetchData();
-}, [user]);
-  
-  
-
-  
+  }, [slotSets, user?.managementName]); 
   
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [zoneAvailableSpaces, setZoneAvailableSpaces] = useState(
     initialSlotSets.map(zone => zone.slots.length)
   );
-
 
   const [recordFound, setRecordFound] = useState(true); 
   const [userFound, setUserFound] = useState(true);
@@ -153,8 +195,6 @@ useEffect(() => {
   navigate("/Reservation");
  };
 
-  
-
   const rows = 5;
   const cols = 3;
 
@@ -180,13 +220,14 @@ useEffect(() => {
   const fullName = `${agent} ${agentL}`;
   const [errorMessage, setErrorMessage] = useState("");
   
-  const addToLogs = async (userDetails) => {
+  const addToLogs = async (userDetails, slotNumber) => {
     try {
       const logsCollectionRef = collection(db, 'logs'); 
       const timestamp = serverTimestamp();
       const logData = {
         ...userDetails,
-        paymentStatus: 'Pending',
+        slotNumber, // Add slotNumber to log data
+        status: 'Occupied', // Add status to log data
         timeIn: timestamp,
         timeOut: null,
         agent: fullName,
@@ -199,6 +240,7 @@ useEffect(() => {
       console.error('Error adding log: ', error);
     }
   };
+  
   
   const [userDetails, setUserDetails] = useState({});
   const [userPlateNumber, setUserPlateNumber] = useState("");
@@ -213,12 +255,11 @@ useEffect(() => {
         return;
       }
     }
-    setSelectedPlateNumber(carPlateNumber);
-    setShowModal(false);
-  
+
+    // Update the local state with new slot status
     const updatedSets = [...slotSets];
     const timestamp = new Date();
-  
+
     const updatedUserDetails = {
       carPlateNumber,
       email: userDetails?.email || "",
@@ -231,27 +272,33 @@ useEffect(() => {
       name: userDetails?.name || "",
       timestamp,
     };
-  
+
     updatedSets[currentSetIndex].slots[slotIndex] = {
       text: carPlateNumber,
       occupied: true,
       timestamp: timestamp,
       userDetails: updatedUserDetails,
     };
-  
+
     setSlotSets(updatedSets);
-  
-    setZoneAvailableSpaces((prevSpaces) => {
-      const updatedSpaces = [...prevSpaces];
-      updatedSpaces[currentSetIndex]--;
-      return updatedSpaces;
-    });
-  
-    addToLogs(updatedUserDetails);
+
+    // Save updated slot status to localStorage
+    saveSlotsToLocalStorage(managementName, updatedSets);
+
+    // Add entry to logs with slotNumber
+    addToLogs(updatedUserDetails, slotIndex);
+
+    // Update Firebase collection to reflect occupied status
+    const slotUpdate = { status: 'Occupied' };
+    const slotRef = doc(db, 'slots', `slot_${slotIndex}`);
+    setDoc(slotRef, slotUpdate, { merge: true })
+      .then(() => console.log(`Slot ${slotIndex} status updated in Firebase`))
+      .catch(error => console.error('Error updating slot status in Firebase:', error));
+
     setErrorMessage("");
   };
-  
 
+  
   const handleSlotClick = (index) => {
     setSelectedSlot(index);
     setShowModal(true);
@@ -356,13 +403,13 @@ useEffect(() => {
         <div className='parkingGrid'
        
       >
-        {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots && slotSets[currentSetIndex].slots.map((slot, index) => (
+       {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots.map((slot, index) => (
   <div
     key={index}
     style={{
       width: '90px',
       height: '80px',
-      backgroundColor: slot.occupied ? 'red' : 'green',
+      backgroundColor: slot.occupied ? 'red' : 'green', // Set background color based on slot.occupied
       color: 'white',
       display: 'flex',
       justifyContent: 'center',
@@ -371,7 +418,7 @@ useEffect(() => {
       marginLeft: '35px',
     }}
     onClick={() => handleSlotClick(index)}
-    >
+  >
     {slot.occupied ? (
       <div>
         <div>{slot.userDetails ? slot.userDetails.carPlateNumber : slot.text}</div>
@@ -381,7 +428,7 @@ useEffect(() => {
     )}
   </div>
 ))}
-      </div>
+</div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
   <Modal.Header closeButton>
     <Modal.Title>Parking Slot {selectedSlot + 1}</Modal.Title>
