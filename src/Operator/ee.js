@@ -4,7 +4,7 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link, } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc, onSnapshot} from 'firebase/firestore';
+import { collection, getDocs, query, where, serverTimestamp,addDoc, setDoc, doc, getDoc, onSnapshot, deleteDoc} from 'firebase/firestore';
 import SearchForm from './SearchForm';
 import UserContext from '../UserContext';
 import { useNavigate } from 'react-router-dom';
@@ -71,7 +71,6 @@ useEffect(() => {
     }
   }
 }, []); 
-
 
 const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
 
@@ -226,7 +225,6 @@ const fetchData = async (managementName) => {
       const timestamp = serverTimestamp();
       const logData = {
         ...userDetails,
-        slotNumber, // Add slotNumber to log data
         status: 'Occupied', // Add status to log data
         timeIn: timestamp,
         timeOut: null,
@@ -244,6 +242,14 @@ const fetchData = async (managementName) => {
   
   const [userDetails, setUserDetails] = useState({});
   const [userPlateNumber, setUserPlateNumber] = useState("");
+
+  const getContinuousSlotNumber = (currentSetIndex, slotIndex) => {
+    let previousSlots = 0;
+    for (let i = 0; i < currentSetIndex; i++) {
+      previousSlots += slotSets[i].slots.length;
+    }
+    return previousSlots + slotIndex + 1;
+  };
   const handleAddToSlot = (carPlateNumber, slotIndex) => {
     if (!carPlateNumber || carPlateNumber.trim() === "") {
       setErrorMessage("Please enter a plate number.");
@@ -256,12 +262,16 @@ const fetchData = async (managementName) => {
       }
     }
 
+    const floorTitle = slotSets[currentSetIndex].title;
+    const uniqueSlotId = floorTitle === 'General Parking' ? `General-${slotIndex}` : `${floorTitle}-${slotIndex}`;
+
     // Update the local state with new slot status
     const updatedSets = [...slotSets];
     const timestamp = new Date();
 
     const updatedUserDetails = {
       carPlateNumber,
+      slotId: slotIndex,
       email: userDetails?.email || "",
       contactNumber: userDetails?.contactNumber || "",
       carPlateNumber: userDetails?.carPlateNumber || carPlateNumber,
@@ -270,6 +280,8 @@ const fetchData = async (managementName) => {
       age: userDetails?.age || "",
       address: userDetails?.address || "",
       name: userDetails?.name || "",
+      agent: fullName,
+      floorTitle,
       timestamp,
     };
 
@@ -281,22 +293,27 @@ const fetchData = async (managementName) => {
     };
 
     setSlotSets(updatedSets);
-
-    // Save updated slot status to localStorage
     saveSlotsToLocalStorage(managementName, updatedSets);
-
-    // Add entry to logs with slotNumber
     addToLogs(updatedUserDetails, slotIndex);
 
-    // Update Firebase collection to reflect occupied status
-    const slotUpdate = { status: 'Occupied' };
-    const slotRef = doc(db, 'slots', `slot_${slotIndex}`);
-    setDoc(slotRef, slotUpdate, { merge: true })
-      .then(() => console.log(`Slot ${slotIndex} status updated in Firebase`))
-      .catch(error => console.error('Error updating slot status in Firebase:', error));
 
+    const managementDocRef = doc(db, 'slot', managementName);
+    const slotCollectionRef = collection(managementDocRef, 'slotData');
+    const slotDocRef = doc(slotCollectionRef, `slot_${slotIndex}`);
+  
+    const slotUpdate = { 
+      status: 'Occupied', 
+      slotId: uniqueSlotId, 
+      userDetails: updatedUserDetails 
+    };
+
+    setDoc(slotDocRef, slotUpdate, { merge: true })
+      .then(() => console.log(`Slot ${slotIndex} status updated in Firebase under ${managementName}, floor ${floorTitle}`))
+      .catch(error => console.error('Error updating slot status in Firebase:', error));
+  
     setErrorMessage("");
-  };
+};
+
 
   
   const handleSlotClick = (index) => {
@@ -307,12 +324,28 @@ const fetchData = async (managementName) => {
   
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const handleExitSlot = async (slotIndex) => {
+    // Check if the slot is already empty
     if (!slotSets[currentSetIndex].slots[slotIndex].occupied) {
       setErrorMessage("This slot is already empty.");
       return;
     }
-    setSelectedSlot(slotIndex);
-    setShowExitConfirmation(true);
+  
+    // Assuming managementName is available in your component
+    const managementDocRef = doc(db, 'slot', managementName);
+    const slotCollectionRef = collection(managementDocRef, 'slotData');
+    const slotDocRef = doc(slotCollectionRef, `slot_${slotIndex}`);
+  
+    try {
+      // Delete the slot document from Firestore
+      await deleteDoc(slotDocRef);
+      console.log(`Slot ${slotIndex} data deleted from Firebase under ${managementName}`);
+    } catch (error) {
+      console.error('Error deleting slot data from Firebase:', error);
+      setErrorMessage('Error processing slot exit. Please try again.');
+      return;
+    }
+  
+    // Update local state to reflect the slot is now empty
     const updatedSets = [...slotSets];
     updatedSets[currentSetIndex].slots[slotIndex] = {
       text: slotIndex + 1, 
@@ -322,33 +355,42 @@ const fetchData = async (managementName) => {
     };
     setSlotSets(updatedSets);
   
+    // Update the count of available spaces
     setZoneAvailableSpaces((prevSpaces) => {
       const updatedSpaces = [...prevSpaces];
       updatedSpaces[currentSetIndex]++;
       return updatedSpaces;
     });
-    const logData = {
-      carPlateNumber: userDetails.carPlateNumber,
-      timeOut: serverTimestamp(),
-      paymentStatus: 'Paid',
-    };
   
-    try {
-      const logsCollectionRef = collection(db, 'logs');
-      const q = query(logsCollectionRef, where('carPlateNumber', '==', userDetails.carPlateNumber));
-      const querySnapshot = await getDocs(q);
+    // If there are userDetails, log the exit
+    const userDetails = updatedSets[currentSetIndex].slots[slotIndex].userDetails;
+    if (userDetails && userDetails.carPlateNumber) {
+      const logData = {
+        carPlateNumber: userDetails.carPlateNumber,
+        timeOut: serverTimestamp(),
+        paymentStatus: 'Paid',
+      };
   
-      querySnapshot.forEach(async (doc) => {
-        const docRef = doc.ref;
-        await setDoc(docRef, logData, { merge: true });
-      });
-    } catch (error) {
-      console.error('Error updating logs: ', error);
+      try {
+        const logsCollectionRef = collection(db, 'logs');
+        const q = query(logsCollectionRef, where('carPlateNumber', '==', userDetails.carPlateNumber));
+        const querySnapshot = await getDocs(q);
+  
+        querySnapshot.forEach(async (doc) => {
+          const docRef = doc.ref;
+          await setDoc(docRef, logData, { merge: true });
+        });
+      } catch (error) {
+        console.error('Error updating logs: ', error);
+      }
     }
   
+    // Clear any error message and close the confirmation dialog if it's open
     setErrorMessage('');
+    setShowExitConfirmation(false);
   };
-
+  
+  
   const handleConfirmExit = () => {
     setShowExitConfirmation(false);
   };
@@ -421,10 +463,10 @@ const fetchData = async (managementName) => {
   >
     {slot.occupied ? (
       <div>
-        <div>{slot.userDetails ? slot.userDetails.carPlateNumber : slot.text}</div>
+        <div>{slot.userDetails ? slot.userDetails.carPlateNumber : getContinuousSlotNumber(currentSetIndex, index)}</div>
       </div>
     ) : (
-      index + 1
+      getContinuousSlotNumber(currentSetIndex, index)
     )}
   </div>
 ))}
