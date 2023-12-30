@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from "../config/firebase";
 import UserContext from '../UserContext';
@@ -118,26 +118,31 @@ const Reservation = () => {
         plateNumber,
       };
 
-      try {
-        // Reference to the slot document in the slotData sub-collection
-        const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', `slot_${slotId}`);
-        const timestamp = reservationRequest.timeOfRequest.toDate ? reservationRequest.timeOfRequest.toDate() : new Date();
-        
-        // Set the user details and slot status to 'Occupied'
-        await setDoc(slotDocRef, {
-          userDetails,
-          status: 'Occupied',
-          slotId: slotId,
-          timestamp: timestamp,
-        }, { merge: true });
+      const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', `slot_${reservationRequest.slotId}`);
 
-        console.log(`Reservation accepted and data stored for slot ${slotId} under management ${user.managementName}`);
-        alert(`Reservation accepted for ${userName} with plate number ${plateNumber} at slot ${slotId}`);
-      } catch (error) {
-        console.error('Error updating slot in Firebase:', error);
-        alert('Failed to update the reservation status. Please try again.');
-      }
+    try {
+      // Set the user details and slot status to 'Occupied' in the slotData sub-document
+      await setDoc(slotDocRef, {
+        userDetails: {
+          name: reservationRequest.userName,
+          plateNumber: reservationRequest.plateNumber,
+        },
+        slotId: slotId,
+        status: 'Occupied',
+        timestamp: new Date(), // Use Firebase server timestamp for consistency
+      }, { merge: true });
+
+      // Remove the reservation from the 'reservations' collection
+      const reservationDocRef = doc(db, 'reservations', reservationRequest.id);
+      await deleteDoc(reservationDocRef);
+
+      console.log(`Reservation accepted for slot ${reservationRequest.slotId} and moved to slotData.`);
+      alert(`Reservation accepted for ${reservationRequest.userName} at slot ${reservationRequest.slotId}`);
+    } catch (error) {
+      console.error('Error accepting reservation and updating slotData:', error);
+      alert('Failed to accept the reservation. Please try again.');
     }
+  }
 
     // Update the selected reservation state
     setSelectedReservation({

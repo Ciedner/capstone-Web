@@ -259,9 +259,10 @@ const fetchData = async (managementName) => {
         return;
       }
     }
-
     const floorTitle = slotSets[currentSetIndex].title || "General Parking";
-    const uniqueSlotId = `${floorTitle}-${slotIndex}`;
+    const uniqueElement = new Date().getTime(); // Using timestamp for uniqueness
+    const uniqueSlotId = `${floorTitle}-${slotIndex}-${uniqueElement}`;
+    const uniqueDocName = `slot_${floorTitle}_${slotIndex}`; // Unique document name
 
     // Update the local state with new slot status
     const updatedSets = [...slotSets];
@@ -297,7 +298,7 @@ const fetchData = async (managementName) => {
 
     const managementDocRef = doc(db, 'slot', managementName);
     const slotCollectionRef = collection(managementDocRef, 'slotData');
-    const slotDocRef = doc(slotCollectionRef, `slot_${slotIndex}`);
+    const slotDocRef = doc(slotCollectionRef, uniqueDocName);
   
     const slotUpdate = { 
       status: 'Occupied', 
