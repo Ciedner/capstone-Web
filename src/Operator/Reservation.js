@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from "../config/firebase";
 import UserContext from '../UserContext';
@@ -12,6 +12,7 @@ const Reservation = () => {
   const [userNames, setUserNames] = useState({});
 
 
+  
   const fetchReservations = async (managementName) => {
     console.log("Fetching reservations for managementName:", managementName);
     const q = query(collection(db, 'reservations'), where('managementName', '==', managementName));
@@ -81,39 +82,80 @@ const Reservation = () => {
       setHistoryLog(storedHistoryLog);
     }
   }, []);
-  const handleReservation = (accepted, name, plateNumber, slot, timeOfRequest, index) => {
+  const handleReservation = async (accepted, reservationRequest, index) => {
+    const { userName, plateNumber, slotId, timeOfRequest } = reservationRequest;
     const status = accepted ? 'Accepted' : 'Declined';
 
+    // Log entry for history
     const logEntry = {
       status,
-      name,
+      name: userName,
       plateNumber,
-      slot,
+      slotId,
       timeOfRequest,
     };
 
+    // Update the history log
     setHistoryLog([logEntry, ...historyLog]);
-
     localStorage.setItem('historyLog', JSON.stringify([logEntry, ...historyLog]));
 
+    // Remove the reservation from the list
     const updatedRequests = [...reservationRequests];
     updatedRequests.splice(index, 1);
     setReservationRequests(updatedRequests);
 
+    // If the reservation is accepted, update the Firebase document
+    if (accepted) {
+      // Check if userName and slotId are defined
+      if (!userName || !slotId) {
+        console.error('Error: Missing userName or slotId');
+        alert('Failed to update the reservation status due to missing data.');
+        return;
+      }
+
+      const userDetails = {
+        name: userName,
+        plateNumber,
+      };
+
+      try {
+        // Reference to the slot document in the slotData sub-collection
+        const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', `slot_${slotId}`);
+        const timestamp = reservationRequest.timeOfRequest.toDate ? reservationRequest.timeOfRequest.toDate() : new Date();
+        
+        // Set the user details and slot status to 'Occupied'
+        await setDoc(slotDocRef, {
+          userDetails,
+          status: 'Occupied',
+          slotId: slotId,
+          timestamp: timestamp,
+        }, { merge: true });
+
+        console.log(`Reservation accepted and data stored for slot ${slotId} under management ${user.managementName}`);
+        alert(`Reservation accepted for ${userName} with plate number ${plateNumber} at slot ${slotId}`);
+      } catch (error) {
+        console.error('Error updating slot in Firebase:', error);
+        alert('Failed to update the reservation status. Please try again.');
+      }
+    }
+
+    // Update the selected reservation state
     setSelectedReservation({
       status,
-      name,
+      name: userName,
       plateNumber,
-      slot,
+      slotId,
       timeOfRequest,
     });
   };
+
+  
 
   const HistoryLog = () => (
     <div className="history-log mt-4" style={{ maxHeight: '200px', overflowY: 'scroll' }}>
       {historyLog.map((logEntry, index) => (
         <div className={`alert ${logEntry.status === 'Accepted' ? 'alert-success' : 'alert-danger'} mt-2`} key={index}>
-          <strong>{logEntry.status}:</strong> {logEntry.name} requested a reservation on {logEntry.timeOfRequest}. Plate Number: {logEntry.plateNumber}, Slot: {logEntry.slot}
+          <strong>{logEntry.status}:</strong> {logEntry.name} requested a reservation on {logEntry.slotId}. Plate Number: {logEntry.plateNumber}, Slot: {logEntry.slotId}
         </div>
       ))}
     </div>
@@ -126,8 +168,8 @@ const Reservation = () => {
       <p>Plate Number: {request.plateNumber}</p>
       <p>Slot Number: {request.slotId}</p>
       <div className="d-flex flex-column align-items-center mt-2">
-        <button className="btn btn-success" onClick={() => handleReservation(true, request.userName, request.plateNumber, request.floor, request.slot, request.timeOfRequest, index)}>Accept Reservation</button>
-        <button className="btn btn-danger mt-2" onClick={() => handleReservation(false, request.userName, request.plateNumber, request.floor, request.slot, request.timeOfRequest, index)}>Decline Reservation</button>
+         <button className="btn btn-success" onClick={() => handleReservation(true, request, index)}>Accept Reservation</button>
+    <button className="btn btn-danger mt-2" onClick={() => handleReservation(false, request, index)}>Decline Reservation</button>
       </div>
     </div>
   );
