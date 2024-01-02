@@ -59,6 +59,35 @@ const loadSlotsFromLocalStorage = (managementName) => {
   }
 };
 
+
+useEffect(() => {
+  const unsubscribe = onSnapshot(query(collection(db, 'slot', user.managementName, 'slotData')), (snapshot) => {
+    const updatedSlots = {}; // Create a temporary object to hold updates
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      const slotId = doc.id; // Use the full doc id as the unique key
+      updatedSlots[slotId] = {
+        ...data,
+        id: slotId, // Store the full doc id here
+        occupied: data.status === 'Occupied',
+      };
+    });
+
+    setSlotSets(prevSlotSets => prevSlotSets.map(slotSet => ({
+      ...slotSet,
+      slots: slotSet.slots.map(slot => {
+        const update = updatedSlots[`slot_${slotSet.title.toLowerCase()}_${slot.id}`]; // Construct the doc id to match Firestore
+        return update ? { ...slot, ...update } : slot; // Apply the update if it exists
+      }),
+    })));
+    saveSlotsToLocalStorage(user.managementName, updatedSlots);
+    console.log("ASDASDASDASD: ", updatedSlots); // Log for debugging
+  });
+
+  return () => unsubscribe();
+}, [db, user.managementName]);
+
 useEffect(() => {
   const managementName = user?.managementName;
   if (managementName) {
@@ -67,10 +96,15 @@ useEffect(() => {
       setSlotSets(savedSlots);
       console.log('Loaded slots from local storage:', savedSlots);
     } else {
-      fetchData(managementName); 
+      fetchData(managementName);
     }
   }
-}, []); 
+}, [user?.managementName]);
+
+useEffect(() => {
+  console.log('Current slotSets state:', slotSets);
+  console.log('Rendering slotSets:', slotSets);
+}, [slotSets]);
 
 const savedSlots = useMemo(() => loadSlotsFromLocalStorage(), []);
 
@@ -161,6 +195,24 @@ const fetchData = async (managementName) => {
     initialSlotSets.map(zone => zone.slots.length)
   );
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(query(collection(db, 'slot', user.managementName, 'slotData')), (snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        const slotId = doc.id; 
+        const slotIndex = slotSets[currentSetIndex].slots.findIndex(slot => `slot_${slot.id}` === slotId);
+  
+        if (slotIndex > -1) {
+          const newSlotSets = [...slotSets];
+          newSlotSets[currentSetIndex].slots[slotIndex] = { ...newSlotSets[currentSetIndex].slots[slotIndex], occupied: data.status === 'Occupied' };
+          setSlotSets(newSlotSets);
+        }
+      });
+    });
+  
+    return () => unsubscribe();
+  }, [db, user.managementName, currentSetIndex, slotSets]);
+
   const [recordFound, setRecordFound] = useState(true); 
   const [userFound, setUserFound] = useState(true);
   const searchInFirebase = async (searchInput) => {
@@ -223,7 +275,7 @@ const fetchData = async (managementName) => {
       const timestamp = new Date();
       const logData = {
         ...userDetails,
-        status: 'Occupied', // Add status to log data
+        status: 'Occupied',
         timeIn: timestamp,
         timeOut: null,
         agent: fullName,
@@ -259,18 +311,18 @@ const fetchData = async (managementName) => {
         return;
       }
     }
-  
     const floorTitle = slotSets[currentSetIndex].title || "General Parking";
-    // Ensure the uniqueSlotId is indeed unique by including both floorTitle and slotIndex
-    const uniqueSlotId = `slot_${floorTitle}_${slotIndex}`;
-  
-    // Update the local state with new slot status
+    const uniqueElement = new Date().getTime(); 
+    const uniqueSlotId = `${floorTitle}-${slotIndex}-${uniqueElement}`;
+    const uniqueDocName = `slot_${floorTitle}_${slotIndex}`; 
+
+
     const updatedSets = [...slotSets];
     const timestamp = new Date();
 
     const updatedUserDetails = {
       carPlateNumber,
-      slotId: uniqueSlotId,
+      slotId: slotIndex,
       email: userDetails?.email || "",
       contactNumber: userDetails?.contactNumber || "",
       carPlateNumber: userDetails?.carPlateNumber || carPlateNumber,
@@ -292,22 +344,25 @@ const fetchData = async (managementName) => {
     };
 
     setSlotSets(updatedSets);
-  saveSlotsToLocalStorage(managementName, updatedSets);
-  addToLogs(updatedUserDetails, uniqueSlotId);
+    saveSlotsToLocalStorage(managementName, updatedSets);
+    addToLogs(updatedUserDetails, slotIndex);
 
 
-  const slotDocRef = doc(db, 'slot', managementName, 'slotData', uniqueSlotId);
+    const managementDocRef = doc(db, 'slot', managementName);
+    const slotCollectionRef = collection(managementDocRef, 'slotData');
+    const slotDocRef = doc(slotCollectionRef, uniqueDocName);
   
-  const slotUpdate = { 
-    status: 'Occupied', 
-    userDetails: updatedUserDetails 
-  };
+    const slotUpdate = { 
+      status: 'Occupied', 
+      slotId: uniqueSlotId, 
+      userDetails: updatedUserDetails 
+    };
 
-  setDoc(slotDocRef, slotUpdate, { merge: true })
-    .then(() => console.log(`${uniqueSlotId} status updated in Firebase under management ${managementName}`))
+     setDoc(slotDocRef, slotUpdate, { merge: true })
+    .then(() => console.log(`Slot ${uniqueSlotId} status updated in Firebase under ${managementName}, floor ${floorTitle}`))
     .catch(error => console.error('Error updating slot status in Firebase:', error));
-
-  setErrorMessage("");
+  
+    setErrorMessage("");
 };
 
 const handleAcceptReservation = async (reservationId, slotId) => {
@@ -318,7 +373,6 @@ const handleAcceptReservation = async (reservationId, slotId) => {
   }
 
   try {
-    // Fetch the reservation details from Firebase
     const reservationRef = doc(db, 'reservations', reservationId);
     const reservationSnapshot = await getDoc(reservationRef);
     if (!reservationSnapshot.exists()) {
@@ -326,42 +380,34 @@ const handleAcceptReservation = async (reservationId, slotId) => {
       return;
     }
     const reservationData = reservationSnapshot.data();
-
-    // Extract timestamp from reservationData
     const reservationTimestamp = reservationData.timestamp;
 
-    // Mark the slot as occupied in Firebase
     const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', `slot_${slotId}`);
     await setDoc(slotDocRef, {
       status: 'Occupied',
       userDetails: {
         name: reservationData.userName,
         email: reservationData.userEmail,
-        // Add additional details if necessary
       },
-      timestamp: reservationTimestamp // Use the timestamp from reservationData
+      timestamp: reservationTimestamp 
     }, { merge: true });
-
-    // Update the local state to reflect the occupied slot
     setSlotSets((prevSlotSets) => {
-      return prevSlotSets.map(slotSet => {
-        return {
-          ...slotSet,
-          slots: slotSet.slots.map((slot, index) => {
-            // Check if this is the slot that we are updating
-            if (slot.id === slotId) {
-              // Return a new object with the updated occupied status
-              return { ...slot, occupied: true };
-            }
-            return slot; // Otherwise, return the slot as is
-          }),
-        };
+      return prevSlotSets.map((slotSet, setIndex) => {
+        if (setIndex === currentSetIndex) {
+          return {
+            ...slotSet,
+            slots: slotSet.slots.map((slot, index) => {
+              if (index === slotId) { 
+                return { ...slot, occupied: true };
+              }
+              return slot;
+            }),
+          };
+        }
+        return slotSet;
       });
     });
-
-    // Optionally save to local storage
     saveSlotsToLocalStorage(user.managementName, slotSets);
-
     console.log(`Reservation accepted for slot ID: ${slotId}`);
 
   } catch (error) {
@@ -378,19 +424,16 @@ const handleAcceptReservation = async (reservationId, slotId) => {
   
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const handleExitSlot = async (slotIndex) => {
-    // Check if the slot is already empty
     if (!slotSets[currentSetIndex].slots[slotIndex].occupied) {
       setErrorMessage("This slot is already empty.");
       return;
     }
   
-    // Assuming managementName is available in your component
     const managementDocRef = doc(db, 'slot', managementName);
     const slotCollectionRef = collection(managementDocRef, 'slotData');
     const slotDocRef = doc(slotCollectionRef, `slot_${slotIndex}`);
   
     try {
-      // Delete the slot document from Firestore
       await deleteDoc(slotDocRef);
       console.log(`Slot ${slotIndex} data deleted from Firebase under ${managementName}`);
     } catch (error) {
@@ -399,7 +442,7 @@ const handleAcceptReservation = async (reservationId, slotId) => {
       return;
     }
   
-    // Update local state to reflect the slot is now empty
+
     const updatedSets = [...slotSets];
     updatedSets[currentSetIndex].slots[slotIndex] = {
       text: slotIndex + 1, 
@@ -452,7 +495,6 @@ const handleAcceptReservation = async (reservationId, slotId) => {
     setShowExitConfirmation(false); 
   };
   
-
   return (
     <div style={{ textAlign: 'center' }}>
         < nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#003851" }}>
@@ -500,19 +542,21 @@ const handleAcceptReservation = async (reservationId, slotId) => {
        
       >
        {slotSets[currentSetIndex] && slotSets[currentSetIndex].slots.map((slot, index) => (
+
   <div
     key={index}
     style={{
       width: '90px',
       height: '80px',
-      backgroundColor: slot.occupied ? 'red' : 'green', // Set background color based on slot.occupied
+      backgroundColor: slot.occupied ? 'red' : 'green',
       color: 'white',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       cursor: 'pointer',
       marginLeft: '35px',
-    }}
+    }
+  }
     onClick={() => handleSlotClick(index)}
   >
     {slot.occupied ? (

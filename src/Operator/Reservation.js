@@ -10,9 +10,11 @@ const Reservation = () => {
   const [historyLog, setHistoryLog] = useState([]);
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [userNames, setUserNames] = useState({});
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [slotSets, setSlotSets] = useState([]);
 
 
-  
   const fetchReservations = async (managementName) => {
     console.log("Fetching reservations for managementName:", managementName);
     const q = query(collection(db, 'reservations'), where('managementName', '==', managementName));
@@ -82,11 +84,21 @@ const Reservation = () => {
       setHistoryLog(storedHistoryLog);
     }
   }, []);
-  const handleReservation = async (accepted, reservationRequest, index) => {
-    const { userName, plateNumber, slotId, timeOfRequest } = reservationRequest;
-    const status = accepted ? 'Accepted' : 'Declined';
 
-    // Log entry for history
+  const getContinuousSlotNumber = (currentSetIndex, index) => {
+    let previousSlots = 0;
+    for (let i = 0; i < currentSetIndex; i++) {
+      previousSlots += slotSets[i].slots.length;
+    }
+    return previousSlots + index + 1;
+  };
+ 
+  const handleReservation = async (accepted, reservationRequest, index) => {
+    const { id, userName, plateNumber, slotId, timeOfRequest } = reservationRequest;
+    const status = accepted ? 'Accepted' : 'Declined';
+   
+    
+    // Create a log entry for the history
     const logEntry = {
       status,
       name: userName,
@@ -94,57 +106,66 @@ const Reservation = () => {
       slotId,
       timeOfRequest,
     };
-
-    // Update the history log
+  
+    // Update the history log in state and local storage
     setHistoryLog([logEntry, ...historyLog]);
     localStorage.setItem('historyLog', JSON.stringify([logEntry, ...historyLog]));
-
-    // Remove the reservation from the list
-    const updatedRequests = [...reservationRequests];
-    updatedRequests.splice(index, 1);
-    setReservationRequests(updatedRequests);
-
-    // If the reservation is accepted, update the Firebase document
+  
     if (accepted) {
-      // Check if userName and slotId are defined
-      if (!userName || !slotId) {
-        console.error('Error: Missing userName or slotId');
-        alert('Failed to update the reservation status due to missing data.');
-        return;
-      }
-
+      const previousSlot = getContinuousSlotNumber(currentSetIndex, index);
+      const uniqueSlotId = `${index}`
       const userDetails = {
         name: userName,
         plateNumber,
+        slotId,
       };
-
-      const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', `slot_${reservationRequest.slotId}`);
-
-    try {
-      // Set the user details and slot status to 'Occupied' in the slotData sub-document
-      await setDoc(slotDocRef, {
-        userDetails: {
-          name: reservationRequest.userName,
-          plateNumber: reservationRequest.plateNumber,
-        },
-        slotId: slotId,
-        status: 'Occupied',
-        timestamp: new Date(), // Use Firebase server timestamp for consistency
-      }, { merge: true });
-
-      // Remove the reservation from the 'reservations' collection
-      const reservationDocRef = doc(db, 'reservations', reservationRequest.id);
-      await deleteDoc(reservationDocRef);
-
-      console.log(`Reservation accepted for slot ${reservationRequest.slotId} and moved to slotData.`);
-      alert(`Reservation accepted for ${reservationRequest.userName} at slot ${reservationRequest.slotId}`);
-    } catch (error) {
-      console.error('Error accepting reservation and updating slotData:', error);
-      alert('Failed to accept the reservation. Please try again.');
+  
+      const slotDocRef = doc(db, 'res', user.managementName, 'resData', `slot_${slotId}`);
+  
+      try {
+        // Set user details in slotData and mark the slot as occupied
+        await setDoc(slotDocRef, {
+          userDetails,
+          slotId,
+          status: 'Occupied',
+          timestamp: new Date()
+        }, { merge: true });
+  
+        // Remove the reservation from the 'reservations' collection
+        const reservationDocRef = doc(db, 'reservations', id);
+        await deleteDoc(reservationDocRef);
+  
+        console.log(`Reservation accepted for slot ${slotId} and moved to slotData.`);
+        alert(`Reservation accepted for ${userName} at slot ${slotId}`);
+      } catch (error) {
+        console.error('Error accepting reservation and updating slotData:', error);
+        alert('Failed to accept the reservation. Please try again.');
+      }
+    } else {
+      // Code for declining the reservation
+      try {
+        // Update the reservation status to 'Declined' in Firebase
+        const reservationDocRef = doc(db, 'reservations', id);
+        await setDoc(reservationDocRef, { status: 'Declined' }, { merge: true });
+  
+        console.log(`Reservation declined for ${userName}.`);
+        alert(`Reservation declined for ${userName}.`);
+      } catch (error) {
+        console.error('Error updating reservation status:', error);
+        alert('Failed to update the reservation status. Please try again.');
+      }
     }
-  }
-
-    // Update the selected reservation state
+  
+    // Remove the reservation from the list in state (for both accept and decline)
+    const updatedRequests = reservationRequests.filter((_, i) => i !== index);
+    setReservationRequests(updatedRequests);
+  
+    // Update local storage only for accepted reservations
+    if (accepted) {
+      localStorage.setItem('reservationRequests', JSON.stringify(updatedRequests));
+    }
+  
+    // Update the selected reservation state if needed
     setSelectedReservation({
       status,
       name: userName,
@@ -153,9 +174,7 @@ const Reservation = () => {
       timeOfRequest,
     });
   };
-
   
-
   const HistoryLog = () => (
     <div className="history-log mt-4" style={{ maxHeight: '200px', overflowY: 'scroll' }}>
       {historyLog.map((logEntry, index) => (
@@ -191,14 +210,21 @@ const Reservation = () => {
       </nav>
       <div className="container mt-5 d-flex flex-column align-items-center justify-content-center">
         <h2 className="text-center mb-4">Parking Reservation Management</h2>
-        <div className="reservation-requests d-flex flex-column align-items-center mb-4" style={{ width: '300px', height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px', background: 'white' }}>
+        <div className="reservation-requests d-flex flex-column align-items-center mb-4" 
+     style={{ width: '300px', height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px', background: 'white' }}>
           {reservationRequests.length === 0 ? (
             <p>No reservation</p>
           ) : (
             reservationRequests.map((request, index) => (
-              <ReservationRequest request={request} index={index} key={index} />
+              <ReservationRequest 
+                request={request} 
+                index={index} 
+                key={index} 
+                slotIndex={request.slotId} // Pass the slotId as slotIndex
+              />
             ))
           )}
+
         </div>
         <h3 className="mb-3 mt-4 text-center">Accepted/Declined Reservations</h3>
         <HistoryLog />
