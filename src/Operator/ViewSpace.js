@@ -78,48 +78,50 @@ useEffect(() => {
     const resDataQuery = query(collection(db, 'res', user.managementName, 'resData'));
     const resDataSnapshot = await getDocs(resDataQuery);
     resDataSnapshot.forEach((doc) => {
-      // Extract the relevant parts of the doc.id to construct the slot ID
-      // Adjust this based on the actual format of your slot IDs in Firestore
-      const slotIdParts = doc.id.split('_');
-      const index = parseInt(slotIdParts[slotIdParts.length - 1], 10);
-      const adjustedIndex = index - 1; // Subtract 1 to align with zero-based indexing
-      const adjustedSlotId = `slot_${slotIdParts[1]}_${adjustedIndex}`;
       const resData = doc.data();
-      // Store the fetched resData using the adjusted slot ID as the key
-      fetchedResData.set(adjustedSlotId, {
+     
+      fetchedResData.set(resData.slotId, {
         ...resData,
-        occupied: true, // Set to true because there's a reservation
-        plateNumber: resData.userDetails.plateNumber // Make sure to get the plate number correctly
+        occupied: true,
+        plateNumber: resData.userDetails.plateNumber 
       });
     });
   };
 
-  // Update the slots based on fetched data
+ 
   const updateSlots = () => {
     setSlotSets(currentSlotSets =>
-      currentSlotSets.map(slotSet => ({
-        ...slotSet,
-        slots: slotSet.slots.map((slot, index) => {
-          const slotId = `slot_${slotSet.title}_${index}`;
-          const slotData = fetchedSlotData.get(slotId);
-          const resData = fetchedResData.get(slotId);
-          const isOccupied = (slotData && slotData.occupied) || (resData && resData.occupied);
-          return {
-            ...slot,
-            occupied: isOccupied,
-            userDetails: isOccupied
-              ? { 
-                  // Show carPlateNumber from resData if available, otherwise from slotData
-                  carPlateNumber: resData?.userDetails?.plateNumber || slotData?.userDetails?.carPlateNumber
-                }
-              : undefined,
-          };
-        }),
-      }))
+      currentSlotSets.map(slotSet => {
+       
+        const floorOrZone = slotSet.title.replace(/\s+/g, '_'); 
+        return {
+          ...slotSet,
+          slots: slotSet.slots.map((slot, index) => {
+            
+            const slotId1 = `slot_${slotSet.title}_${index}`;
+            const slotId = floorOrZone === 'General_Parking'
+              ? `General Parking_${index + 1}` 
+              : `${floorOrZone}_${slot.slotNumber || index  + 3}`; 
+            const slotData = fetchedSlotData.get(slotId1);
+            const resData = fetchedResData.get(slotId);
+            const isOccupied = (slotData && slotData.occupied) || (resData && resData.occupied);
+            return {
+              ...slot,
+              occupied: isOccupied,
+              userDetails: isOccupied
+                ? { 
+                    // Show carPlateNumber from resData if available, otherwise from slotData
+                    carPlateNumber: resData?.userDetails?.plateNumber || slotData?.userDetails?.carPlateNumber
+                  }
+                : undefined,
+            };
+          }),
+        };
+      })
     );
   };
 
-  // Execute the data fetching and updating
+  
   const fetchDataAndUpdateSlots = async () => {
     await fetchSlotData();
     await fetchResData();
@@ -129,7 +131,7 @@ useEffect(() => {
   // Run the async function
   fetchDataAndUpdateSlots();
 
-}, [db, user.managementName, slotSets]);
+}, [db, user.managementName]);
 
 
 useEffect(() => {
@@ -473,32 +475,40 @@ const handleAcceptReservation = async (reservationId, slotId) => {
       return;
     }
   
-    // Adjusted slotIndex if your slots are 1-indexed in Firestore
-    const adjustedSlotIndex = slotIndex + 1;
-    const slotDocId = `slot_${slotSets[currentSetIndex].title}_${adjustedSlotIndex}`;
+    const slotTitleFormatted = slotSets[currentSetIndex].title.replace(/\s+/g, '_');
+    const slotDocId = `slot_${slotTitleFormatted}_${slotIndex}`;
     const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', slotDocId);
-    const resDocRef = doc(db, 'res', user.managementName, 'resData', slotDocId);
   
-    // Delete slot data
     try {
       await deleteDoc(slotDocRef);
-      console.log(`Slot data deleted from Firestore under ${managementName}, slot id: ${slotDocId}`);
+      console.log(`Slot data deleted from Firestore under ${user.managementName}, slot id: ${slotDocId}`);
     } catch (error) {
       console.error('Error deleting slot data from Firestore:', error);
       setErrorMessage('Error processing slot exit. Please try again.');
       return;
     }
   
-    // Attempt to delete reservation data if it exists
-    try {
-      await deleteDoc(resDocRef);
-      console.log(`Reservation data deleted from Firestore under ${managementName}, slot id: ${slotDocId}`);
-    } catch (error) {
-      // Log the error but don't fail the entire operation as it might not be critical
-      console.error('Error deleting reservation data from Firestore:', error);
-    }
   
-    // Update the local state to reflect the changes
+    const resTitleFormat = slotSets[currentSetIndex].title.replace(/\s+/g, ' '); 
+  const resDocIdPattern = /^slot_[a-zA-Z]+_\d+$/;
+
+
+  let potentialResDocId = `slot_${resTitleFormat}_${slotIndex}`;
+
+  if (resDocIdPattern.test(potentialResDocId)) {
+    potentialResDocId = `slot_${resTitleFormat}_${slotIndex + 3}`;
+  } else {
+    potentialResDocId = `slot_${resTitleFormat}_${slotIndex + 1}`;
+  }
+
+  const resDocRef = doc(db, 'res', user.managementName, 'resData', potentialResDocId);
+  try {
+    await deleteDoc(resDocRef);
+    console.log(`Reservation data deleted from Firestore under ${user.managementName}, slot id: ${potentialResDocId}`);
+  } catch (error) {
+    console.error('Error deleting reservation data from Firestore:', error);
+  }
+  
     const updatedSets = slotSets.map((slotSet, setIdx) => {
       if (setIdx === currentSetIndex) {
         const updatedSlots = slotSet.slots.map((slot, idx) => {
@@ -512,7 +522,6 @@ const handleAcceptReservation = async (reservationId, slotId) => {
       return slotSet;
     });
     setSlotSets(updatedSets);
-  
     // Log the exit in the logs collection
     const userDetails = slotSets[currentSetIndex].slots[slotIndex].userDetails;
     if (userDetails && userDetails.carPlateNumber) {
