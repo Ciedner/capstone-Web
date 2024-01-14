@@ -200,6 +200,8 @@ const Reservation = () => {
   
 
   return (
+    
+    
     <div>
       <nav className="navbar navbar-dark bg-dark">
         <div className="container">
@@ -209,9 +211,9 @@ const Reservation = () => {
         </div>
       </nav>
       <div className="container mt-5 d-flex flex-column align-items-center justify-content-center">
-        <h2 className="text-center mb-4">Parking Reservation Management</h2>
-        <div className="reservation-requests d-flex flex-column align-items-center mb-4" 
-     style={{ width: '300px', height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px', background: 'white' }}>
+        <h2 className="text-center mb-4" style={{color: 'white'}}>Parking Reservation Management</h2>
+        <div className="reservation-requests d-flex flex-column align-items-center mb-4" style={{ width: '600px', height:'60vh', overflowY: 'scroll', padding: '10px', background: 'rgba(0, 0, 0, 0.5)'}}>
+
           {reservationRequests.length === 0 ? (
             <p>No reservation</p>
           ) : (

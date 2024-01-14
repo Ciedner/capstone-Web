@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import UserContext from '../UserContext';
 import { Dropdown } from 'bootstrap';
+import "./buttonUI.css"
+
 
 function Login() {
   const { setUser } = useContext(UserContext);
@@ -76,9 +78,7 @@ function Login() {
       console.error('Error logging in:', error);
       alert('Error logging in. Please try again.');
     }
-  };
-
-
+  }
 
   const containerStyle = {
     display: 'flex',
@@ -86,7 +86,13 @@ function Login() {
     alignItems: 'center',
     minHeight: '100vh',
     backgroundColor: 'white',
-  };
+    backgroundImage: 'url("https://images.unsplash.com/photo-1604063155785-ee4488b8ad15?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGFya2luZyUyMGxvdHxlbnwwfHwwfHx8MA%3D%3D")', // Replace with your image URL
+    backgroundPosition: 'center',
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+
+};
+
   const selectStyle = {
     width: '100%',
     padding: '10px',
@@ -94,43 +100,52 @@ function Login() {
     border: '1px solid #ccc',
     borderRadius: '5px',
     fontSize: '16px',
-    fontFamily: 'Georgina'
+    fontFamily:'Montserrat'
+ 
   };
   const formContainerStyle = {
-    backgroundColor: 'white',
-    marginTop:'100px',
-    padding: '30px',
-    borderRadius: '10px',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
-    width: '400px',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Semi-transparent white
+    padding: '40px 30px',
+    borderRadius: '15px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    maxWidth: '450px', // Use a maximum width
+    width: '90%', // Adjust as needed for responsiveness
+    height: 'auto', // Let the height adjust to content
     textAlign: 'center',
+    position: 'absolute', // Use 'absolute' for responsiveness
+    top: '50%', // Center vertically
+    left: '50%', // Center horizontally
+    transform: 'translate(-50%, -50%)',
   };
 
   const inputStyle = {
     width: '100%',
-    padding: '10px',
-    marginBottom: '15px',
+    padding: '12px 20px',
+    margin: '8px 0',
+    display: 'inline-block',
     border: '1px solid #ccc',
-    borderRadius: '5px',
-    fontSize: '16px',
-    fontFamily:'Georgina'
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s ease-in-out',
+    ':hover': {
+      borderColor: '#888'
+    }
   };
 
   const buttonStyle = {
     width: '100%',
     padding: '12px',
-    backgroundColor: '#1877f2',
-    color: 'white',
-    border: 'none',
+    backgroundColor: '#6ac5fe',
     borderRadius: '5px',
     cursor: 'pointer',
     fontSize: '18px',
+    marginTop: '10%'
   };
 
   const buttonStyle2 = {
     width: '100%',
     padding: '12px',
-    backgroundColor: 'green',
+    backgroundColor: '#5CED73',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
@@ -151,20 +166,30 @@ function Login() {
     fontSize: '24px',
     fontWeight: 'bold',
   };
+  const h1Style ={
+    color: 'White',
+  }
+  const h6Style ={
+    color: '#ECECEC',
+    marginBottom: '20px'
 
+  }
 
   return (
+   
     <div style={containerStyle}>
         <div style={navbarStyle}>
         <div style={logoStyle}>SpotWise Parking Management</div>
       </div>
       <div style={formContainerStyle}>
+        <h1 style={h1Style}>HELLO!</h1>
+        <h6 style={h6Style}>Unlock the Gateway to Your World</h6>
          <select
           value={userType}
           onChange={(e) => setUserType(e.target.value)}
           style={selectStyle}
         >
-          <option value="" >Please select type of account</option>
+          <option value="">Please select type of account</option>
           <option value="agents">Operator</option>
           <option value="establishment">Establishment</option>
         </select>
@@ -199,18 +224,22 @@ function Login() {
             </span>
           )}
         </div>
-          <button type="submit" style={buttonStyle}>
+          <div>
+          <button type="submit" style={buttonStyle} class ="glowonhover">
             Log In
           </button>
-          <p style={{ marginTop: '10px', fontSize: '14px' }}>
-           <a href="/forget">Forget Password?</a>
+          <p style={{ marginTop: '10px', fontSize: '12px' }}>
+          <a href="/forget" style={{ textDecoration: 'none', color: '#ECECEC' }}>Forget Password?</a>
           </p>
-          <button type="submit" style={buttonStyle2} onClick={handleCreate}>
+          <button className="glowonhover" type="submit" style={buttonStyle2} onClick={handleCreate}>
             Create Account
           </button>
+          </div>
         </form>
+     
       </div>
     </div>
+    
   );
 }
 export default Login;
