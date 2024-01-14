@@ -101,7 +101,7 @@ useEffect(() => {
             const slotId1 = `slot_${slotSet.title}_${index}`;
             const slotId = floorOrZone === 'General_Parking'
               ? `General Parking_${index + 1}` 
-              : `${floorOrZone}_${slot.slotNumber || index  + 3}`; 
+              : `${floorOrZone}_${slot.slotNumber || index + 3}`; 
             const slotData = fetchedSlotData.get(slotId1);
             const resData = fetchedResData.get(slotId);
             const isOccupied = (slotData && slotData.occupied) || (resData && resData.occupied);
@@ -460,8 +460,6 @@ const handleAcceptReservation = async (reservationId, slotId) => {
     console.error('Error accepting reservation:', error);
   }
 };
-
-  
   const handleSlotClick = (index) => {
     setSelectedSlot(index);
     setShowModal(true);
@@ -475,7 +473,7 @@ const handleAcceptReservation = async (reservationId, slotId) => {
       return;
     }
   
-    const slotTitleFormatted = slotSets[currentSetIndex].title.replace(/\s+/g, '_');
+    const slotTitleFormatted = slotSets[currentSetIndex].title.replace(/\s+/g, ' ');
     const slotDocId = `slot_${slotTitleFormatted}_${slotIndex}`;
     const slotDocRef = doc(db, 'slot', user.managementName, 'slotData', slotDocId);
   
@@ -489,7 +487,7 @@ const handleAcceptReservation = async (reservationId, slotId) => {
     }
   
   
-    const resTitleFormat = slotSets[currentSetIndex].title.replace(/\s+/g, ' '); 
+  const resTitleFormat = slotSets[currentSetIndex].title.replace(/\s+/g, ' '); 
   const resDocIdPattern = /^slot_[a-zA-Z]+_\d+$/;
 
 
